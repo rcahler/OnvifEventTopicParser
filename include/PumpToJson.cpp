@@ -62,57 +62,43 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 
 	}
 
-	
+
 	string Manu = deviceData.devInfo.response.Manufacturer;
 	string name = "TEST";
-		
-	JSON_Value *root_value = json_value_init_object();	
-	JSON_Object *root_object = json_value_get_object(root_value);	
-	char *serialized_string = NULL;	
+
+	JSON_Value *root_value = json_value_init_object();
+	JSON_Object *root_object = json_value_get_object(root_value);
+	char *serialized_string = NULL;
 	json_object_set_string(root_object, "manufacturer", Manu.c_str());
-	JSON_Value *motion_value = json_value_init_object();	
-	JSON_Object *motion_object = json_value_get_object(motion_value);	
+	JSON_Value *motion_value = json_value_init_object();
+	JSON_Object *motion_object = json_value_get_object(motion_value);
 	json_object_set_string(motion_object, "name", name.c_str());
 
 	string s = "[" + string(json_serialize_to_string(motion_value)) + ']'; //Automate this with an unknown number of parameters, seperate function probablt
 
-
 	for (int i = 0; i < topics.size(); i++) {
 		//cout << "name: " << topics[i].name << endl;
 
-		string s = topics[i].name;
-		if (s.find("motion") || s.find("video") || s.find("RuleEngine")) { //motion
-			cout << "MOTION" << endl;
+		string st = topics[i].name;
+
+		//There doesn't really seem to be a better way of doing this, still need to deal with options
+		if (st.find("Video") != -1 || st.find("RuleEngine") != -1) {//motion
+			cout << "Motion" << endl;
+			json_object_dotset_value(root_object, "motion.Topic", json_parse_string(s.c_str()));
 		}
-		else if (s.find("Device")) { //Input Triggers
-			cout << "INPUT TRIGGER" << endl;
+		else if (st.find("Device") != -1) { //Input Trigger
+			cout << "Input Trigger" << endl;
+			json_object_dotset_value(root_object, "input trigger.Topic", json_parse_string(s.c_str()));
 		}
-
-
-
-		for (int j = 0; j < topics[i].elements.size(); j++) {
-			//cout << "element name: " << topics[i].elements[j].first << " element value: " << topics[i].elements[j].second << endl;
+		else if (st.find("/IVA/") != -1) {//Analytics
+			cout << "Analytics" << endl;
+			json_object_dotset_value(root_object, "analytics.Topic", json_parse_string(s.c_str()));
 		}
 	}
-
-
-
-	if (motion) {
-		//Whole motion Topic needs to go into third input parameter
-		json_object_dotset_value(root_object, "motion.Topic", json_parse_string(s.c_str()));
-	}
-	if (input_trigger) {
-		json_object_dotset_value(root_object, "input trigger.Topic", json_parse_string(s.c_str()));
-	}
-
-	if (analytics) {
-		json_object_dotset_value(root_object, "analytics.Topic", json_parse_string(s.c_str()));
-	}
-
-	json_object_set_value(root_object, "options", json_parse_string(s.c_str()));
 
 	serialized_string = json_serialize_to_string_pretty(root_value);
 	puts(serialized_string);
 	json_free_serialized_string(serialized_string);
 	json_value_free(root_value);
+
 }
