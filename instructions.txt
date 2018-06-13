@@ -1,0 +1,6 @@
+Remember that any changes you make to which WSDLs are used needs to be reflected in the build files
+
+1. build01
+2. add #import "wsse.h" in the onvif.h and change #import "wsdd10.h" to #import "wsdd.h"
+3. build02
+4. build03
