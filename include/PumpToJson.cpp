@@ -44,7 +44,8 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 	vector<vector<string>> EventProperties = ParseEventProperties(dom);
 	vector<Topic> topics;
 
-	//Move functionality into ParseEventPropertiesv 
+	//Move functionality into ParseEventProperties
+
 	for (int i = 0; i < EventProperties.size(); i++) {
 
 		Topic topic;
@@ -70,31 +71,90 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 	JSON_Object *root_object = json_value_get_object(root_value);
 	char *serialized_string = NULL;
 	json_object_set_string(root_object, "manufacturer", Manu.c_str());
-	JSON_Value *motion_value = json_value_init_object();
-	JSON_Object *motion_object = json_value_get_object(motion_value);
-	json_object_set_string(motion_object, "name", name.c_str());
 
-	string s = "[" + string(json_serialize_to_string(motion_value)) + ']'; //Automate this with an unknown number of parameters, seperate function probablt
+	vector<string> motionV;
+	vector<string> inputV;
+	vector<string> analyticsV;
+	vector<string> optionsV;
 
 	for (int i = 0; i < topics.size(); i++) {
-		//cout << "name: " << topics[i].name << endl;
 
 		string st = topics[i].name;
 
-		//There doesn't really seem to be a better way of doing this, still need to deal with options
 		if (st.find("Video") != -1 || st.find("RuleEngine") != -1) {//motion
-			cout << "Motion" << endl;
-			json_object_dotset_value(root_object, "motion.Topic", json_parse_string(s.c_str()));
+			JSON_Value *motion_value = json_value_init_object();
+			JSON_Object *motion_object = json_value_get_object(motion_value);
+
+			JSON_Value *data_value = json_value_init_object();
+			JSON_Object *data_object = json_value_get_object(data_value);
+			
+			if (topics[i].elements.size() > 1) {
+				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
+			}
+			else {
+				cerr << "Issue at: " << __LINE__ << " with " << st << endl;
+			}
+			
+			//Not yet sure how to get the values that go along with this
+		
+			json_object_set_string(motion_object, "name", st.c_str());
+			json_object_set_value(motion_object, "data", data_value);
+
+			motionV.push_back(string(json_serialize_to_string(motion_value)));
 		}
 		else if (st.find("Device") != -1) { //Input Trigger
-			cout << "Input Trigger" << endl;
-			json_object_dotset_value(root_object, "input trigger.Topic", json_parse_string(s.c_str()));
+			JSON_Value *input_value = json_value_init_object();
+			JSON_Object *input_object = json_value_get_object(input_value);
+
+			JSON_Value *data_value = json_value_init_object();
+			JSON_Object *data_object = json_value_get_object(data_value);
+
+			if (topics[i].elements.size() > 1) {
+				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
+			}
+			else {
+				cerr << "Issue at: " << __LINE__ << " with " << st << endl;
+			}
+
+			//Not yet sure how to get the values that go along with this
+
+			json_object_set_string(input_object, "name", st.c_str());
+			json_object_set_value(input_object, "data", data_value);
+
+			inputV.push_back(string(json_serialize_to_string(input_value)));
 		}
 		else if (st.find("/IVA/") != -1) {//Analytics
-			cout << "Analytics" << endl;
-			json_object_dotset_value(root_object, "analytics.Topic", json_parse_string(s.c_str()));
+			//cout << "Analytics" << endl;
+			//json_object_dotset_value(root_object, "analytics.Topic", json_parse_string(s.c_str()));
 		}
 	}
+
+
+	string mString;
+	for (int i = 0; i < motionV.size(); i++) {
+		if (i == motionV.size() - 1) {
+			mString += motionV[i];
+		}
+		else {
+			mString += motionV[i] + ",";
+		}
+	}
+
+	string iString;
+	for (int i = 0; i < inputV.size(); i++) {
+		if (i == inputV.size() - 1) {
+			iString += inputV[i];
+		}
+		else {
+			iString += inputV[i] + ",";
+		}
+	}
+
+	mString = '[' + mString + ']';
+	iString = '[' + iString + ']';
+
+	json_object_dotset_value(root_object, "motion.topic", json_parse_string(mString.c_str()));
+	json_object_dotset_value(root_object, "input trigger.topic", json_parse_string(iString.c_str()));
 
 	serialized_string = json_serialize_to_string_pretty(root_value);
 	puts(serialized_string);
