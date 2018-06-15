@@ -14,7 +14,6 @@ void Event::setCredentials(string user, string pass, string url)
 
 int Event::GetEventProperties()
 {
-	cout << "Getting event properties" << endl;
 	soap_wsse_add_Security(&PullPoint);
 	soap_wsse_add_UsernameTokenDigest(&PullPoint, "Id", m_username.c_str(), m_password.c_str());
 

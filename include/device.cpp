@@ -15,7 +15,6 @@ void Device::setCredentials(string user, string pass, string url)
 
 int Device::SyncCamTime()
 {
-	cout << "Synchronizing the camera's time with the system's" << endl;
 	_tds__GetSystemDateAndTime GSDAT;
 	_tds__GetSystemDateAndTimeResponse GSDATresp;
 	int i = deviceBindProxy.GetSystemDateAndTime(&GSDAT, GSDATresp);
@@ -57,7 +56,6 @@ int Device::SyncCamTime()
 
 int Device::GetDeviceInformation()
 {
-	cout << "Getting device information" << endl;
 	soap_wsse_add_Security(&deviceBindProxy);
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 	_tds__GetDeviceInformation GDI;
@@ -68,8 +66,6 @@ int Device::GetDeviceInformation()
 
 int Device::GetCapabilities()
 {
-	cout << "Getting device capabilities" << endl;
-	
 	soap_wsse_add_Security(&deviceBindProxy);
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 
@@ -110,7 +106,6 @@ int Device::GetCapabilities()
 
 int Device::GetRelayOutputs()
 {
-	cout << "Getting device relay outputs" << endl;
 	soap_wsse_add_Security(&deviceBindProxy);
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 
