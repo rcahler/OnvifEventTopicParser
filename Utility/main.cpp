@@ -14,8 +14,6 @@
 #include "PumpDataToFile.hpp"
 #include "PumpToJson.hpp"
 
-using namespace std;
-
 Device device;
 Event eventDevice;
 
@@ -24,19 +22,19 @@ int main(int argc, char* argv[]) {
 	Camera cam = ValidateCredentials(argc, argv);
 
 	if (cam.error.boo == true) {
-		cerr << cam.error.eString << endl;
+		std::cerr << cam.error.eString << std::endl;
 		return 0;
 	} else if (cam.path.boo == false) {
-		cout << cam.path.fString << endl;
+		std::cout << cam.path.fString << std::endl;
 	}
-	string username = cam.username;
-	string password = cam.password;
-	string url = cam.url;
+	std::string username = cam.username;
+	std::string password = cam.password;
+	std::string url = cam.url;
 
 	device.setCredentials(username, password, url);
 
 	if (device.SyncCamTime() != 0) {
-		cerr << "The camera and local system times could not be synched" << endl << "" << endl;
+		std::cerr << "The camera and local system times could not be synched" << endl << "" << std::endl;
 	}
 
 	if (device.GetCapabilities() != 0) {
@@ -78,6 +76,7 @@ int main(int argc, char* argv[]) {
 			profiles.push_back(trt__CreateProfileResponse.Profile);
 		}
 		
+		std::cout << "size: " << profiles.size() << std::endl;
 		for (int i = 0; i < profiles.size(); i++) {
 			//Cleans out previous test profiles made by the software
 			if (profiles[i]->Name == "TEST") {
@@ -91,42 +90,74 @@ int main(int argc, char* argv[]) {
 				mediaProxy.DeleteProfile(&del, delResp);
 			}
 			else {
-				cout << profiles[i]->Name << endl;
+				std::cout << "Name: " << profiles[i]->Name << std::endl;
 				if (profiles[i]->AudioEncoderConfiguration){
-					cout << "AudioEncoderConfiguration: " << profiles[i]->AudioEncoderConfiguration->token << endl;
+					std::cout << "AudioEncoderConfiguration: " << profiles[i]->AudioEncoderConfiguration->token << std::endl;
 				}
+				else {
+					std::cout << "No AudioEncoderConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->AudioSourceConfiguration){
-					cout << "AudioSourceConfiguration: " << profiles[i]->AudioSourceConfiguration->Name << endl;
+					std::cout << "AudioSourceConfiguration: " << profiles[i]->AudioSourceConfiguration->Name << std::endl;
 				}
+				else {
+					std::cout << "No AudioSourceConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->Extension){
 					if (profiles[i]->Extension->AudioDecoderConfiguration) {
-						cout << "Extension->AudioDecoderConfiguration: " << profiles[i]->Extension->AudioDecoderConfiguration->Name << endl;
+						std::cout << "Extension->AudioDecoderConfiguration: " << profiles[i]->Extension->AudioDecoderConfiguration->Name << std::endl;
 					}
 					if (profiles[i]->Extension->AudioOutputConfiguration) {
-						cout << "Extension->AudioOutputConfiguration: " << profiles[i]->Extension->AudioOutputConfiguration->Name << endl;
+						std::cout << "Extension->AudioOutputConfiguration: " << profiles[i]->Extension->AudioOutputConfiguration->Name << std::endl;
 					}
 				}
-				if (profiles[i]->MetadataConfiguration){
-					cout << "MetadataConfiguration: " << profiles[i]->MetadataConfiguration->Name << endl;
+				else {
+					std::cout << "No Extension" << std::endl;
 				}
+
+				if (profiles[i]->MetadataConfiguration) {
+					std::cout << "MetadataConfiguration: " << profiles[i]->MetadataConfiguration->Name << std::endl;
+					tt__MetadataConfiguration *metadata = profiles[i]->MetadataConfiguration;
+				}
+				else {
+					std::cout << "No MetaDataConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->PTZConfiguration){
-					cout << "PTZConfiguration: " << profiles[i]->PTZConfiguration->Name << endl;
+					std::cout << "PTZConfiguration: " << profiles[i]->PTZConfiguration->Name << std::endl;
 				}
+				else {
+					std::cout << "No PTZConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->VideoAnalyticsConfiguration){
-					cout << "VideoAnalyticsConfiguration: " << profiles[i]->VideoAnalyticsConfiguration->Name << endl;
+					std::cout << "VideoAnalyticsConfiguration: " << profiles[i]->VideoAnalyticsConfiguration->Name << std::endl;
 				}
+				else {
+					std::cout << "No VideoAnalyticsConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->VideoEncoderConfiguration){
-					cout << "VideoEncoderConfiguration: " << profiles[i]->VideoEncoderConfiguration->Name << endl;
+					std::cout << "VideoEncoderConfiguration: " << profiles[i]->VideoEncoderConfiguration->Name << std::endl;
 				}
+				else {
+					std::cout << "No VideoEncoderConfiguration" << std::endl;
+				}
+
 				if (profiles[i]->VideoSourceConfiguration){
-					cout << "VideoSourceConfiguration: " << profiles[i]->VideoSourceConfiguration->Name << endl;
+					std::cout << "VideoSourceConfiguration: " << profiles[i]->VideoSourceConfiguration->Name << std::endl;
 				}
-				cout << "" << endl;
+				else {
+					std::cout << "No VideoSourceConfiguration" << std::endl;
+				}
+				std::cout << "" << endl;
 			}
 		}
 	}
 	else {
-		cerr << "This camera does not support profiles" << endl;
+		std::cerr << "This camera does not support profiles" << std::endl;
 	}
 
 	//PumpDataJson(ValidateCredentials(argc, argv), deviceData, eventData);
