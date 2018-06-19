@@ -5,12 +5,10 @@
 #include "split.h"
 #include "ParseEventProperties.h"
 
-using namespace std;
-
 //Each of the string vectors returned has the Topic name, the name of the data and the data type as seperate strings
-vector<vector<string>> ParseEventProperties(vector<soap_dom_element> dom) {
+std::vector<std::vector<std::string>> ParseEventProperties(std::vector<soap_dom_element> dom) {
 
-	stringstream stream;
+	std::stringstream stream;
 	//Parse
 	for (int i = 0; i < dom.size(); i++) {
 
@@ -19,21 +17,21 @@ vector<vector<string>> ParseEventProperties(vector<soap_dom_element> dom) {
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
 			if (it->depth() > depth) { depth = it->depth(); }
 		}
-		string* Topic = new string[depth];
+		std::string* Topic = new std::string[depth];
 		// print attribute tags
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
-			string itTag(it->tag());
+			std::string itTag(it->tag());
 			Topic[it->depth() - 1] = itTag;
-			if (itTag.find("tt:SimpleItemDescription") != string::npos) { //Get the attributes of the element
+			if (itTag.find("tt:SimpleItemDescription") != std::string::npos) { //Get the attributes of the element
 				if (it->atts) {
 					//There has to be a better way to do this but I can't figure it out
 					soap_dom_attribute dom = *it->atts;
 					soap_dom_attribute domNext = *it->atts->next;
 
 					for (int j = 0; j < depth; j++) {
-						if (Topic[j].find("tt:") == string::npos) {
+						if (Topic[j].find("tt:") == std::string::npos) {
 							//Make look better
-							if (Topic[j].find(':') != string::npos) { stream << split(Topic[j], ':')[1] << "/"; }
+							if (Topic[j].find(':') != std::string::npos) { stream << split(Topic[j], ':')[1] << "/"; }
 							else {
 								stream << Topic[j] << "/"; 
 							}
@@ -52,11 +50,11 @@ vector<vector<string>> ParseEventProperties(vector<soap_dom_element> dom) {
 			}
 		}
 	}
-	vector<string> splitByLine = split(stream.str(), '\n');
-	vector<vector<string>> splitBySpace;
+	std::vector<std::string> splitByLine = split(stream.str(), '\n');
+	std::vector<std::vector<std::string>> splitBySpace;
 
 	for (int i = 0; i < splitByLine.size(); i++) {
-		vector<string> vec1 = split(splitByLine[i], ' ');
+		std::vector<std::string> vec1 = split(splitByLine[i], ' ');
 		bool boo = true;
 		for (int j = 0; j < splitBySpace.size(); j++) {
 			if (splitBySpace[j][0] != vec1[0]) {
@@ -71,7 +69,7 @@ vector<vector<string>> ParseEventProperties(vector<soap_dom_element> dom) {
 			splitBySpace.push_back(vec1);
 		}
 		else {
-			vector<string> v = splitBySpace[splitBySpace.size() - 1]; //Should return last element in vector
+			std::vector<std::string> v = splitBySpace[splitBySpace.size() - 1]; //Should return last element in vector
 			splitBySpace.pop_back();
 			v.push_back(vec1[1]);
 			v.push_back(vec1[2]);

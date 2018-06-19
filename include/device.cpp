@@ -3,7 +3,7 @@
 
 Device::Device() {}
 
-void Device::setCredentials(string user, string pass, string url)
+void Device::setCredentials(std::string user, std::string pass, std::string url)
 {
 	m_username = user;
 	m_password = pass;
@@ -94,12 +94,6 @@ int Device::GetCapabilities()
 	else {
 		evXaddr = m_url;
 	}
-
-	GCresp.Capabilities->Imaging->XAddr;
-
-	GCresp.Capabilities->Media->XAddr;
-
-	GCresp.Capabilities->PTZ->XAddr;
 
 	return SOAP_OK;
 }

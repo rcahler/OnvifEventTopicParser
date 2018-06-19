@@ -8,19 +8,17 @@
 #include "PumpToJson.hpp"
 #include "parson.h"
 
-using namespace std;
-
 class Topic {
 public:
-	string name;
-	vector<pair<string, string>> elements;
+	std::string name;
+	std::vector<std::pair<std::string, std::string>> elements;
 };
 
 //All motion events contain the words motion, video, or ruleengine
 // "Device/Trigger/DigitalInput/", "UserAlarm/GeneralAlarm/", "Device/IO/Port/", "Device/Trigger/Relay/"
 void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 
-	stringstream stream;
+	std::stringstream stream;
 	stream << boolalpha;
 
 	//For whether or not the camera has these topics
@@ -40,9 +38,9 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 		}
 	}
 	//GetEventProperties
-	vector<soap_dom_element> dom = eventData.resp.wstop__TopicSet->__any;
-	vector<vector<string>> EventProperties = ParseEventProperties(dom);
-	vector<Topic> topics;
+	std::vector<soap_dom_element> dom = eventData.resp.wstop__TopicSet->__any;
+	std::vector<std::vector<std::string>> EventProperties = ParseEventProperties(dom);
+	std::vector<Topic> topics;
 
 	//Move functionality into ParseEventProperties
 
@@ -51,10 +49,10 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 		Topic topic;
 		topic.name = EventProperties[i][0];
 
-		vector<pair<string, string>> elements;
+		std::vector<std::pair<std::string, std::string>> elements;
 
 		for (int k = 1; k < EventProperties[i].size(); k += 2) {
-			pair<string, string> pair = make_pair(EventProperties[i][k], EventProperties[i][k + 1]);
+			std::pair<std::string, std::string> pair = make_pair(EventProperties[i][k], EventProperties[i][k + 1]);
 			elements.push_back(pair);
 		}
 		topic.elements = elements;
@@ -64,22 +62,22 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 	}
 
 
-	string Manu = deviceData.devInfo.response.Manufacturer;
-	string name = "TEST";
+	std::string Manu = deviceData.devInfo.response.Manufacturer;
+	std::string name = "TEST";
 
 	JSON_Value *root_value = json_value_init_object();
 	JSON_Object *root_object = json_value_get_object(root_value);
 	char *serialized_string = NULL;
 	json_object_set_string(root_object, "manufacturer", Manu.c_str());
 
-	vector<string> motionV;
-	vector<string> inputV;
-	vector<string> analyticsV;
-	vector<string> optionsV;
+	std::vector<std::string> motionV;
+	std::vector<std::string> inputV;
+	std::vector<std::string> analyticsV;
+	std::vector<std::string> optionsV;
 
 	for (int i = 0; i < topics.size(); i++) {
 
-		string st = topics[i].name;
+		std::string st = topics[i].name;
 
 		if (st.find("Video") != -1 || st.find("RuleEngine") != -1) {//motion
 			JSON_Value *motion_value = json_value_init_object();
@@ -92,7 +90,7 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
 			}
 			else {
-				cerr << "Issue at: " << __LINE__ << " with " << st << endl;
+				std::cerr << "Issue at: " << __LINE__ << " with " << st << std::endl;
 			}
 			
 			//Not yet sure how to get the values that go along with this
@@ -113,7 +111,7 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
 			}
 			else {
-				cerr << "Issue at: " << __LINE__ << " with " << st << endl;
+				std::cerr << "Issue at: " << __LINE__ << " with " << st << std::endl;
 			}
 
 			//Not yet sure how to get the values that go along with this
@@ -130,7 +128,7 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 	}
 
 
-	string mString;
+	std::string mString;
 	for (int i = 0; i < motionV.size(); i++) {
 		if (i == motionV.size() - 1) {
 			mString += motionV[i];
@@ -140,7 +138,7 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 		}
 	}
 
-	string iString;
+	std::string iString;
 	for (int i = 0; i < inputV.size(); i++) {
 		if (i == inputV.size() - 1) {
 			iString += inputV[i];

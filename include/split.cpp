@@ -3,12 +3,10 @@
 #include <vector>
 #include <sstream>
 
-using namespace std;
-
-vector<string> split(const string &s, char delim) {
-	vector<string> vector;
-	stringstream stream(s);
-	string between;
+std::vector<std::string> split(const std::string &s, char delim) {
+	std::vector<std::string> vector;
+	std::stringstream stream(s);
+	std::string between;
 
 	while (getline(stream, between, delim)) {
 		vector.push_back(between);

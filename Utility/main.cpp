@@ -10,6 +10,7 @@
 #include "device.hpp"
 #include "event.hpp"
 #include "soapMediaBindingProxy.h"
+#include "soapRuleEngineBindingProxy.h"
 #include "ValidateCred.hpp"
 #include "PumpDataToFile.hpp"
 #include "PumpToJson.hpp"
@@ -75,8 +76,7 @@ int main(int argc, char* argv[]) {
 			mediaProxy.CreateProfile(&trt__CreateProfile, trt__CreateProfileResponse);
 			profiles.push_back(trt__CreateProfileResponse.Profile);
 		}
-		
-		std::cout << "size: " << profiles.size() << std::endl;
+
 		for (int i = 0; i < profiles.size(); i++) {
 			//Cleans out previous test profiles made by the software
 			if (profiles[i]->Name == "TEST") {
@@ -90,123 +90,114 @@ int main(int argc, char* argv[]) {
 				mediaProxy.DeleteProfile(&del, delResp);
 			}
 			else {
-				std::cout << "Name: " << profiles[i]->Name << std::endl;
-				if (profiles[i]->AudioEncoderConfiguration){
-					std::cout << "AudioEncoderConfiguration: " << profiles[i]->AudioEncoderConfiguration->token << std::endl;
-				}
-				else {
-					std::cout << "No AudioEncoderConfiguration" << std::endl;
+				//std::cout << "Name: " << profiles[i]->Name << std::endl;
+
+				if (profiles[i]->AudioEncoderConfiguration) {
+					profiles[i]->AudioEncoderConfiguration->token;
 				}
 
-				if (profiles[i]->AudioSourceConfiguration){
-					std::cout << "AudioSourceConfiguration: " << profiles[i]->AudioSourceConfiguration->Name << std::endl;
-				}
-				else {
-					std::cout << "No AudioSourceConfiguration" << std::endl;
+				if (profiles[i]->AudioSourceConfiguration) {
+					profiles[i]->AudioSourceConfiguration->SourceToken;
+					profiles[i]->AudioSourceConfiguration->token;
 				}
 
-				if (profiles[i]->Extension){
+				if (profiles[i]->Extension) {
 					if (profiles[i]->Extension->AudioDecoderConfiguration) {
-						std::cout << "Extension->AudioDecoderConfiguration: " << profiles[i]->Extension->AudioDecoderConfiguration->Name << std::endl;
+						profiles[i]->Extension->AudioDecoderConfiguration->token;
 					}
 					if (profiles[i]->Extension->AudioOutputConfiguration) {
-						std::cout << "Extension->AudioOutputConfiguration: " << profiles[i]->Extension->AudioOutputConfiguration->Name << std::endl;
+						profiles[i]->Extension->AudioOutputConfiguration->token;
 					}
-				}
-				else {
-					std::cout << "No Extension" << std::endl;
 				}
 
 				if (profiles[i]->MetadataConfiguration) {
-					std::cout << "MetadataConfiguration: " << profiles[i]->MetadataConfiguration->Name << std::endl;
-					tt__MetadataConfiguration *metadata = profiles[i]->MetadataConfiguration;
-				}
-				else {
-					std::cout << "No MetaDataConfiguration" << std::endl;
-				}
-
-				if (profiles[i]->PTZConfiguration){
-					std::cout << "PTZConfiguration: " << profiles[i]->PTZConfiguration->Name << std::endl;
-				}
-				else {
-					std::cout << "No PTZConfiguration" << std::endl;
+					if (profiles[i]->MetadataConfiguration->AnalyticsEngineConfiguration) {
+						tt__MetadataConfiguration *metadata = profiles[i]->MetadataConfiguration;
+						std::vector<tt__Config*> metaVec = metadata->AnalyticsEngineConfiguration->AnalyticsModule;
+						for (int i = 0; i < metaVec.size(); i++) {
+							//cout << "Meta: " << metaVec[i]->Name << endl;
+						}
+					}
 				}
 
-				if (profiles[i]->VideoAnalyticsConfiguration){
-					std::cout << "VideoAnalyticsConfiguration: " << profiles[i]->VideoAnalyticsConfiguration->Name << std::endl;
+				if (profiles[i]->PTZConfiguration) {
+					//profiles[i]->PTZConfiguration->token;
+					//profiles[i]->PTZConfiguration->NodeToken;
 				}
-				else {
-					std::cout << "No VideoAnalyticsConfiguration" << std::endl;
+
+				//This appears to be a portion of what I need
+				if (profiles[i]->VideoAnalyticsConfiguration) {
+					RuleEngineBindingProxy analytics;
+					analytics.soap_endpoint = device.anXaddr.c_str();
+
+					if (profiles[i]->VideoAnalyticsConfiguration->AnalyticsEngineConfiguration) {
+						_tan__GetSupportedAnalyticsModules GSAM;
+						GSAM.ConfigurationToken = profiles[i]->VideoAnalyticsConfiguration->token;
+						_tan__GetSupportedAnalyticsModulesResponse GSAMresp;
+
+						soap_wsse_add_Security(&analytics);
+						soap_wsse_add_UsernameTokenDigest(&analytics, "Id", username.c_str(), password.c_str());
+						analytics.GetSupportedAnalyticsModules(&GSAM, GSAMresp);
+					}
+					
+					if (profiles[i]->VideoAnalyticsConfiguration->RuleEngineConfiguration) {
+						_tan__GetSupportedRules GSR;
+						GSR.ConfigurationToken = profiles[i]->VideoAnalyticsConfiguration->token;
+						_tan__GetSupportedRulesResponse GSRresp;
+
+						soap_wsse_add_Security(&analytics);
+						soap_wsse_add_UsernameTokenDigest(&analytics, "Id", username.c_str(), password.c_str());
+						analytics.GetSupportedRules(&GSR, GSRresp);
+
+						std::vector<tt__ConfigDescription*> descriptions = GSRresp.SupportedRules->RuleDescription;
+						for (int j = 0; j < descriptions.size(); j++) {
+							cout << "Rule Description names: " << descriptions[j]->Name << endl;
+							std::vector < _tt__ConfigDescription_Messages> mesgs = descriptions[j]->Messages;
+							for (int k = 0; k < mesgs.size(); k++) {
+								if (mesgs[k].Source) {
+									std::vector<_tt__ItemListDescription_SimpleItemDescription> source = mesgs[k].Source->SimpleItemDescription;
+									cout << "source: " << source.size() << endl;
+								}
+								if (mesgs[k].Key) {
+									std::vector<_tt__ItemListDescription_SimpleItemDescription> key = mesgs[k].Key->SimpleItemDescription;
+									cout << "key: " << key.size() << endl;
+								}
+								if (mesgs[k].Data) {
+									std::vector<_tt__ItemListDescription_SimpleItemDescription> data = mesgs[k].Data->SimpleItemDescription;
+									cout << "data: " << data.size() << endl;
+								}
+							}
+						}
+					}
+					
+					/*std::vector<tt__Config*> aecVec = profiles[i]->VideoAnalyticsConfiguration->AnalyticsEngineConfiguration->AnalyticsModule;
+					for (int j = 0; j < aecVec.size(); j++) {
+						cout << "Analytics Engine: " << aecVec[j]->Name << endl;
+					}
+
+					std::vector<tt__Config*> ruleVec = profiles[i]->VideoAnalyticsConfiguration->RuleEngineConfiguration->Rule;
+					for (int k = 0; k < ruleVec.size(); k++) {
+						cout << "Rule Engine: " << ruleVec[k]->Name << endl;
+					}*/
 				}
 
 				if (profiles[i]->VideoEncoderConfiguration){
-					std::cout << "VideoEncoderConfiguration: " << profiles[i]->VideoEncoderConfiguration->Name << std::endl;
-				}
-				else {
-					std::cout << "No VideoEncoderConfiguration" << std::endl;
+					//profiles[i]->VideoEncoderConfiguration->token;
 				}
 
 				if (profiles[i]->VideoSourceConfiguration){
-					std::cout << "VideoSourceConfiguration: " << profiles[i]->VideoSourceConfiguration->Name << std::endl;
+					//profiles[i]->VideoSourceConfiguration->SourceToken;
+					//profiles[i]->VideoSourceConfiguration->token;
 				}
-				else {
-					std::cout << "No VideoSourceConfiguration" << std::endl;
-				}
-				std::cout << "" << endl;
 			}
 		}
 	}
 	else {
 		std::cerr << "This camera does not support profiles" << std::endl;
 	}
-
-	//PumpDataJson(ValidateCredentials(argc, argv), deviceData, eventData);
+	PumpDataJson(ValidateCredentials(argc, argv), deviceData, eventData);
 	return 0;
 }
-
-
-
-
-//
-//soap_wsse_add_Security(&mediaProxy);
-//soap_wsse_add_UsernameTokenDigest(&mediaProxy, "Id", username.c_str(), password.c_str());
-//mediaProxy.CreateProfile(&trt__CreateProfile, trt__CreateProfileResponse);
-//
-//_trt__GetAudioOutputConfigurationOptions GAOCO;
-//_trt__GetAudioOutputConfigurationOptionsResponse GAOCOresp;
-//mediaProxy.GetAudioOutputConfigurationOptions(&GAOCO, GAOCOresp);
-//
-//_trt__GetCompatibleVideoSourceConfigurations GCVSC;
-//GCVSC.ProfileToken = trt__CreateProfileResponse.Profile->token;
-//_trt__GetCompatibleVideoSourceConfigurationsResponse GCVSCresp;
-////ISSUE HERE
-//mediaProxy.GetCompatibleVideoSourceConfigurations(&GCVSC, GCVSCresp);
-//
-//cout << "HERE" << endl;
-//_trt__GetMetadataConfigurations GMC;
-//_trt__GetMetadataConfigurationsResponse GMCresp;
-//mediaProxy.GetMetadataConfigurations(&GMC, GMCresp);
-//
-//
-//soap_wsse_add_Security(&mediaProxy);
-//soap_wsse_add_UsernameTokenDigest(&mediaProxy, "Id", username.c_str(), password.c_str());
-//
-//_trt__GetVideoAnalyticsConfigurations GVAC;
-//_trt__GetVideoAnalyticsConfigurationsResponse GVACresp;
-//
-//
-//int i = mediaProxy.GetVideoAnalyticsConfigurations(&GVAC, GVACresp);
-//if (i == 0) {
-//	if (GVACresp.Configurations.size() == 0) {
-//		cerr << "ISSUE" << endl;
-//	}
-//}
-//else {
-//	if (GVACresp.Configurations.size() > 0) {
-//		cerr << "ISSUE" << endl;
-//	}
-//}
-//cout << "HERE" << endl;
 
 
 

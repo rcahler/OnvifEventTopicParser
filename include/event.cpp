@@ -1,10 +1,8 @@
 #include "event.hpp"
 
-using namespace std;
-
 Event::Event() {}
 
-void Event::setCredentials(string user, string pass, string url)
+void Event::setCredentials(std::string user, std::string pass, std::string url)
 {
 	m_username = user;
 	m_password = pass;

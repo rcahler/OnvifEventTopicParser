@@ -10,8 +10,6 @@
 #include <string>
 #include "split.h"
 
-using namespace std;
-
 //TODO
 //Check if username and password are valid with the supplied ip address
 Camera ValidateCredentials(int argc, char* argv[]) {
@@ -34,10 +32,10 @@ Camera ValidateCredentials(int argc, char* argv[]) {
 	}
 
 	
-	string ipAddr(argv[3]);
+	std::string ipAddr(argv[3]);
 
 	//Checks ipAddress
-	vector<string> ipVec = split(ipAddr, '.');
+	std::vector<std::string> ipVec = split(ipAddr, '.');
 	if (ipVec.size() != 4) {
 		cam.error.boo = true;
 		cam.error.eString = "Malformed IP address";

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OnvifLib", "OnvifLib\OnvifLib.vcxproj", "{DBA18251-1B72-4C60-AF1E-D1E86FC65AB7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Utility", "Utility\Utility.vcxproj", "{323F6299-670B-4347-9B9B-EFF11BEEDF90}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DBA18251-1B72-4C60-AF1E-D1E86FC65AB7} = {DBA18251-1B72-4C60-AF1E-D1E86FC65AB7}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

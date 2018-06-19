@@ -8,6 +8,8 @@
 #include "split.h"
 #include "ParseEventProperties.h"
 
+//Existed to figure out what all was needed
+
 //MediaCaps
 int MaximumNumberOfProfiles;
 bool RTPMulticast;
