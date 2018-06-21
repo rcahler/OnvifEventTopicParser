@@ -88,9 +88,18 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 			
 			if (topics[i].elements.size() > 1) {
 				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
+				for (int q = 0; q < topics[i].elements.size(); q++) {
+					//std::cout << "Element " << q << " first " << topics[i].elements[q].first << std::endl;
+					//std::cout << "Element " << q << " second " << topics[i].elements[q].second << std::endl;
+				}
 			}
 			else {
-				std::cerr << "Issue at: " << __LINE__ << " with " << st << std::endl;
+				//std::cerr << "Issue at: " << __LINE__ << " with " << st << std::endl;
+				for (int q = 0; q < topics[i].elements.size(); q++) {
+					//std::cout << "Element " << q << " first " << topics[i].elements[q].first << std::endl;
+					//std::cout << "Element " << q << " second " << topics[i].elements[q].second << std::endl;
+				}
+				std::cout << "" << std::endl;
 			}
 			
 			//Not yet sure how to get the values that go along with this
@@ -109,9 +118,18 @@ void PumpDataJson(Camera cam, DeviceData deviceData, EventData eventData) {
 
 			if (topics[i].elements.size() > 1) {
 				json_object_set_string(data_object, "name", topics[i].elements[1].first.c_str());
+				for (int q = 0; q < topics[i].elements.size(); q++) {
+					//std::cout << "Element " << q << " first " << topics[i].elements[q].first << std::endl;
+					//std::cout << "Element " << q << " second " << topics[i].elements[q].second << std::endl;
+				}
 			}
 			else {
 				std::cerr << "Issue at: " << __LINE__ << " with " << st << std::endl;
+				for (int q = 0; q < topics[i].elements.size(); q++) {
+					//std::cout << "Element " << q << " first " << topics[i].elements[q].first << std::endl;
+					//std::cout << "Element " << q << " second " << topics[i].elements[q].second << std::endl;
+				}
+				std::cout << "" << std::endl;
 			}
 
 			//Not yet sure how to get the values that go along with this
