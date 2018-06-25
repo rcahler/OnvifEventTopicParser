@@ -6,8 +6,6 @@
 #ifndef _Event_
 #define _Event_
 
-using namespace std;
-
 struct EventData {
 	_tev__GetEventPropertiesResponse resp;
 };
@@ -15,17 +13,17 @@ struct EventData {
 class Event {
 
 public: //Constructor
-	Event();
+	Event(std::string user, std::string pass, std::string url);
 public: //Functions
-	void setCredentials(string user, string pass, string url);
 	int GetEventProperties();
-	EventData ReturnEventData();
 private: //Variables
-	string m_username;
-	string m_password;
-	string m_url;
+	std::string m_username;
+	std::string m_password;
+	std::string m_url;
 	PullPointSubscriptionBindingProxy PullPoint;
 	_tev__GetEventPropertiesResponse GEVresp;
+public: //Variables to be accessed from outside
+	std::vector<soap_dom_element> topics;
 };
 
 #endif

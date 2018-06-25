@@ -3,10 +3,11 @@
 #include <sstream>
 #include <soapH.h>
 #include "split.h"
+#include "Topic.h"
 #include "ParseEventProperties.h"
 
 //Each of the string vectors returned has the Topic name, the name of the data and the data type as seperate strings
-std::vector<std::vector<std::string>> ParseEventProperties(std::vector<soap_dom_element> dom) {
+std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 
 	std::stringstream stream;
 	//Parse
@@ -77,5 +78,23 @@ std::vector<std::vector<std::string>> ParseEventProperties(std::vector<soap_dom_
 		}
 	}
 
-	return splitBySpace;
+	std::vector<Topic> topics;
+	for (int i = 0; i < splitBySpace.size(); i++) {
+
+		Topic topic;
+		topic.name = splitBySpace[i][0];
+
+		std::vector<std::pair<std::string, std::string>> elements;
+
+		for (int k = 1; k < splitBySpace[i].size(); k += 2) {
+			std::pair<std::string, std::string> pair = make_pair(splitBySpace[i][k], splitBySpace[i][k + 1]);
+			elements.push_back(pair);
+		}
+		topic.elements = elements;
+
+		topics.push_back(topic);
+
+	}
+
+	return topics;
 }

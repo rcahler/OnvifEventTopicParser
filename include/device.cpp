@@ -1,10 +1,7 @@
 #include "device.hpp"
 #include "wsseapi.h"
 
-Device::Device() {}
-
-void Device::setCredentials(std::string user, std::string pass, std::string url)
-{
+Device::Device(std::string user, std::string pass, std::string url) {
 	m_username = user;
 	m_password = pass;
 	m_url = url;
@@ -34,7 +31,7 @@ int Device::SyncCamTime()
 		SetDateTimeReq.DaylightSavings = (bool)offsetStruct->tm_isdst;// DayLightSavings;
 																	  
 		tt__TimeZone* TiZ = new tt__TimeZone;
-		string TimeZ = "GMT-5:00:00";
+		std::string TimeZ = "GMT-5:00:00";
 		TiZ->TZ = TimeZ;	SetDateTimeReq.TimeZone = TiZ;
 		// set the camera time to match pc time for authentication simplicity
 		tt__DateTime* UTCDateTime = new tt__DateTime;
@@ -59,9 +56,22 @@ int Device::GetDeviceInformation()
 	soap_wsse_add_Security(&deviceBindProxy);
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 	_tds__GetDeviceInformation GDI;
-	deviceBindProxy.GetDeviceInformation(&GDI, GDIresp);
+	int result = deviceBindProxy.GetDeviceInformation(&GDI, GDIresp);
 
-	return SOAP_OK;
+	if (result == SOAP_OK) {
+		Manufacturer = GDIresp.Manufacturer;
+		FirmwareVersion = GDIresp.FirmwareVersion;
+		HardwareId = GDIresp.HardwareId;
+		Model = GDIresp.Model;
+		SerialNumber = GDIresp.SerialNumber;
+	}
+
+	return result;
+
+
+
+
+	return result;
 }
 
 int Device::GetCapabilities()
@@ -109,39 +119,6 @@ int Device::GetRelayOutputs()
 	return SOAP_OK;
 }
 
-int Device::GetDiscoveryMode()
-{
-	soap_wsse_add_Security(&deviceBindProxy);
-	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
-
-	_tds__GetDiscoveryMode GDM;
-	deviceBindProxy.GetDiscoveryMode(&GDM, GDMresp);
-
-	return SOAP_OK;
-}
-
-int Device::GetNetworkInterfaces()
-{
-	soap_wsse_add_Security(&deviceBindProxy);
-	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
-
-	_tds__GetNetworkInterfaces GNI;
-	deviceBindProxy.GetNetworkInterfaces(&GNI, GNIresp);
-
-
-	return SOAP_OK;
-}
-
-DeviceData Device::ReturnDeviceData()
-{
-	DeviceData data;
-
-	data.devInfo.response = GDIresp;
-	data.capData.caps = GCresp.Capabilities;
-	data.relayData.response = GROresp;
-
-	return data;
-}
 
 int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 {

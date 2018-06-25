@@ -5,59 +5,39 @@
 #include "soapDeviceBindingProxy.h"
 #include "soapStub.h"
 
-using namespace std;
-
-struct DevInfData {
-	_tds__GetDeviceInformationResponse response;
-};
-
-struct CapData {
-	tt__Capabilities* caps;
-};
-
-struct RelayData {
-	_tds__GetRelayOutputsResponse response;
-};
-
-struct DeviceData {
-	DevInfData devInfo;
-	CapData capData;
-	RelayData relayData;
-};
-
 class Device {
 
 public: //Constructor
-	Device();
+	Device(std::string user, std::string pass, std::string url);
 public: //Functions
-	void setCredentials(string user, string pass, string url);
 	int SyncCamTime();
 	int GetDeviceInformation();
 	int GetCapabilities();
 	int GetRelayOutputs();
-	int GetDiscoveryMode();
-	int GetNetworkInterfaces();
-	DeviceData ReturnDeviceData();
 private: //Local functions
 	int LocalAddUsernameTokenDigest(struct soap *soapOff, double cam_pc_offset);
 	double findDiffTime(struct tm local_sys, tt__DateTime cameraTime, bool isDST);
 private: //Classwide variables
-	string m_username;
-	string m_password;
-	string m_url;
+	std::string m_username;
+	std::string m_password;
+	std::string m_url;
 	DeviceBindingProxy deviceBindProxy;
 	_tds__GetDeviceInformationResponse GDIresp;
 	_tds__GetCapabilitiesResponse GCresp;
 	_tds__GetRelayOutputsResponse GROresp;
-	_tds__GetDiscoveryModeResponse GDMresp;
-	_tds__GetNetworkInterfacesResponse GNIresp;
 public://Xaddr
-	string anXaddr;
-	string deXaddr;
-	string evXaddr;
-	string imXaddr;
-	string meXaddr;
-	string ptzXaddr;
+	std::string anXaddr;
+	std::string deXaddr;
+	std::string evXaddr;
+	std::string imXaddr;
+	std::string meXaddr;
+	std::string ptzXaddr;
+public://Variables from the camera that need to be passed
+	std::string Manufacturer;
+	std::string FirmwareVersion;
+	std::string HardwareId;
+	std::string Model;
+	std::string SerialNumber;
 };
 
 #endif // !"_Device_"

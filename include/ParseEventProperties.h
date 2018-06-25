@@ -5,7 +5,6 @@
 #include <sstream>
 #include <soapH.h>
 #include "split.h"
+#include "Topic.h"
 
-using namespace std;
-
-vector<vector<string>> ParseEventProperties(vector<soap_dom_element> dom);
+std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom);

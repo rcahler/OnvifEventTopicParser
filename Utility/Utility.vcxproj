@@ -23,10 +23,9 @@
     <ClCompile Include="..\include\device.cpp" />
     <ClCompile Include="..\include\event.cpp" />
     <ClCompile Include="..\include\ParseEventProperties.cpp" />
-    <ClCompile Include="..\include\PumpDataToFile.cpp" />
-    <ClCompile Include="..\include\PumpToJson.cpp" />
     <ClCompile Include="..\include\split.cpp" />
     <ClCompile Include="..\include\ValidateCred.cpp" />
+    <ClCompile Include="GetData.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
@@ -36,11 +35,11 @@
     <ClInclude Include="..\include\device.hpp" />
     <ClInclude Include="..\include\event.hpp" />
     <ClInclude Include="..\include\ParseEventProperties.h" />
-    <ClInclude Include="..\include\PumpDataToFile.hpp" />
-    <ClInclude Include="..\include\PumpToJson.hpp" />
     <ClInclude Include="..\include\split.h" />
     <ClInclude Include="..\include\ValidateCred.hpp" />
+    <ClInclude Include="GetData.hpp" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Topic.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -97,21 +96,29 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VCInstallDir)UnitTest\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86; $(VCInstallDir)UnitTest\lib;$(LibraryPath);$(VCInstallDir)UnitTest\lib;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VCInstallDir)UnitTest\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64; $(VCInstallDir)UnitTest\lib;$(LibraryPath);$(VCInstallDir)UnitTest\lib;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VCInstallDir)UnitTest\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86; $(VCInstallDir)UnitTest\lib;$(LibraryPath);$(VCInstallDir)UnitTest\lib;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VCInstallDir)UnitTest\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64; $(VCInstallDir)UnitTest\lib;$(LibraryPath);$(VCInstallDir)UnitTest\lib;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -120,7 +127,8 @@
       <SDLCheck>
       </SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Utility;..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\3rdparty\openssl\lib\32Debug;..\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -134,8 +142,9 @@
       <SDLCheck>
       </SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Utility;..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OmitFramePointers>false</OmitFramePointers>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\3rdparty\openssl\lib\64Debug;..\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -151,10 +160,11 @@
       <SDLCheck>
       </SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Utility;..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -172,11 +182,12 @@
       <SDLCheck>
       </SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\Utility;..\3rdparty\parson;..\include;..\gsoap\gsoap\runtime;..\3rdparty\openssl\include;..\onvifgen;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <EnablePREfast>false</EnablePREfast>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
