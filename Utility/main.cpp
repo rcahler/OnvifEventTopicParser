@@ -1,34 +1,39 @@
-#include "stdafx.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include "soapStub.h"
 #include "ValidateCred.hpp"
 #include "GetData.hpp"
+#include "main.h"
+#include "SaveToFile.hpp"
 
 
 int main(int argc, char* argv[]) {
 
-	cout << std::boolalpha;
-	Camera cam = ValidateCredentials(argc, argv);
-
-	if (cam.error.boo == true) {
-		std::cerr << cam.error.eString << std::endl;
+	ValidateCredentials creds(argc, argv);
+	
+	if (creds.errorBoo == true) {
+		std::cerr << creds.eString << std::endl;
 		return 0;
-	} else if (cam.path.boo == false) {
-		std::cout << cam.path.fString << std::endl;
+	} else if (creds.fileBoo == false) {
+		std::cout << creds.fString << std::endl;
 	}
-	std::string username = cam.username;
-	std::string password = cam.password;
-	std::string url = cam.url;
+	std::string username = creds.username;
+	std::string password = creds.password;
+	std::string url = creds.url;
 
-	GetData(username, password, url);
+	GetData data(username, password, url);
+	std::stringstream &stream = data.returnStream();
+	std::string name = data.returnManu();
 
-	
 
-	//Attempted to pass cam as a parameter but got error C2280: 'Camera::Camera(const Camera &)': attempting to reference a deleted function //Something to do with lacking a constructor maybe
-	//Figure out this error at a later date, more important to get everything working first and foremost
-	
-	//PumpDataJson(ValidateCredentials(argc, argv), deviceData, eventData);
+	//Opens filestream with an existing file or creates new file
+	if (creds.fileBoo) {
+		SaveToFile(creds.fString, name, stream);
+	}
+	else {
+		std::cout << stream.str();
+	}
+
 	return 0;
 }
 

@@ -1,4 +1,3 @@
-#include <sstream>
 #include "device.hpp"
 #include "event.hpp"
 #include "GetData.hpp"
@@ -6,16 +5,7 @@
 #include "Topic.h"
 #include "parson.h"
 
-std::string m_username;
-std::string m_password;
-std::string m_url;
-
-//These vectors are where the Json topics are added too
-std::vector<std::string> motionV;
-std::vector<std::string> inputV;
-
-
-void GetData(std::string user, std::string pass, std::string url) {
+GetData::GetData(std::string user, std::string pass, std::string url) {
 	m_username = user;
 	m_password = pass;
 	m_url = url;
@@ -46,7 +36,7 @@ void GetData(std::string user, std::string pass, std::string url) {
 		return;
 	}
 
-	std::string Manufacturer = device.Manufacturer;
+	Manufacturer = device.Manufacturer;
 	std::string FirmwareVersion = device.FirmwareVersion;
 	std::string HardwareId = device.HardwareId;
 	std::string Model = device.Model;
@@ -61,7 +51,7 @@ void GetData(std::string user, std::string pass, std::string url) {
 		return;
 	}
 	
-	std::cout << "" << endl;
+	std::cout << "" << std::endl;
 
 	for (int i = 0; i < topics.size(); i++) {
 		auto elements = topics[i].elements;
@@ -111,13 +101,13 @@ void GetData(std::string user, std::string pass, std::string url) {
 	}
 
 	serialized_string = json_serialize_to_string_pretty(root_value);
-	puts(serialized_string);
+	stream << serialized_string;
 	json_free_serialized_string(serialized_string);
 	json_value_free(root_value);
 	
 }
 
-void ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	if (IsMotion(name)) {
 		JSON_Value *motion_value = json_value_init_object();
@@ -157,7 +147,7 @@ void ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string,
 		json_object_set_value(motion_object, "source", source_value);
 		json_object_set_value(motion_object, "data", data_value);
 
-		motionV.push_back(string(json_serialize_to_string(motion_value)));
+		motionV.push_back(std::string(json_serialize_to_string(motion_value)));
 	}
 	else if (IsInTrig(name)) {
 		JSON_Value *input_value = json_value_init_object();
@@ -190,42 +180,98 @@ void ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string,
 		json_object_set_value(input_object, "source", source_value);
 		json_object_set_value(input_object, "data", data_value);
 
-		inputV.push_back(string(json_serialize_to_string(input_value)));
+		inputV.push_back(std::string(json_serialize_to_string(input_value)));
 	}
 	else {
-		std::cout << "" << std::endl << "Neither motion or input trigger: " << name << std::endl;
+		//std::cout << "" << std::endl << "Neither motion or input trigger: " << name << std::endl;
 	}
 }
 
-void ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	if (IsMotion(name)) {
-		std::cout << "ToJsonTopicMoreElements: " << "IsMotion" << std::endl;
+		/*std::cout << name << std::endl;
+		for (int i = 0; i < elements.size(); i++) {
+			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
+		}
+		std::cout << "" << std::endl;*/
 	}
 	else if (IsInTrig(name)) {
-		std::cout << "ToJsonTopicMoreElements: " << "IsInTrig" << std::endl;
+		/*std::cout << name << std::endl;
+		for (int i = 0; i < elements.size(); i++) {
+			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
+		}
+		std::cout << "" << std::endl;*/
 	}
 	else {
-		std::cout << "ToJsonTopicMoreElements: " << "Else" << std::endl;
+		/*std::cout << name << std::endl;
+		for (int i = 0; i < elements.size(); i++) {
+			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
+		}
+		std::cout << "" << std::endl;*/
 	}
 
 }
 
-void ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	if (IsMotion(name)) {
-		std::cout << "ToJsonTopicLessElements: " << "IsMotion" << std::endl;
+		JSON_Value *motion_value = json_value_init_object();
+		JSON_Object *motion_object = json_value_get_object(motion_value);
+		json_object_set_string(motion_object, "name", name.c_str());
+
+		JSON_Value *data_value = json_value_init_object();
+		JSON_Object *data_object = json_value_get_object(data_value);
+
+		json_object_set_string(data_object, "name", elements[0].first.c_str());
+
+		//data
+		if (elements[0].second.find("boolean")) {
+			json_object_set_string(data_object, "on", "true");
+			json_object_set_string(data_object, "off", "false");
+		}
+		else { //non-boolean data
+			json_object_set_string(data_object, "Not", "Boolean");
+			json_object_set_string(data_object, "Fix", "Later");
+		}
+
+		json_object_set_value(motion_object, "data", data_value);
+
+		motionV.push_back(std::string(json_serialize_to_string(motion_value)));
 	}
 	else if (IsInTrig(name)) {
-		std::cout << "ToJsonTopicLessElements: " << "IsInTrig" << std::endl;
+		JSON_Value *input_value = json_value_init_object();
+		JSON_Object *input_object = json_value_get_object(input_value);
+		json_object_set_string(input_object, "name", name.c_str());
+
+		//The source values are more likely to be arrays of data, while the data should be the same format
+		JSON_Value *data_value = json_value_init_object();
+		JSON_Object *data_object = json_value_get_object(data_value);
+		json_object_set_string(data_object, "name", elements[0].first.c_str());
+
+		//data
+		if (elements[0].second.find("boolean")) {
+			json_object_set_string(data_object, "on", "true");
+			json_object_set_string(data_object, "off", "false");
+		}
+		else { //non-boolean data
+			json_object_set_string(data_object, "Not", "Boolean");
+			json_object_set_string(data_object, "Fix", "Later");
+		}
+
+		json_object_set_value(input_object, "data", data_value);
+		inputV.push_back(std::string(json_serialize_to_string(input_value)));
 	}
 	else {
-		std::cout << "ToJsonTopicLessElements: " << "Else" << std::endl;
+		/*std::cout << "ToJsonTopicLessElements: " << "Else" << std::endl;
+		std::cout << name << std::endl;
+		std::cout << elements[0].first << std::endl;
+		std::cout << elements[0].second << std::endl;
+		std::cout << "" << std::endl;*/
 	}
 }
 
-
-bool IsMotion(std::string s)
+bool GetData::IsMotion(std::string s)
 {
 	bool boo;
 	if (s.find("Video") != -1 || s.find("RuleEngine") != -1) {
@@ -237,14 +283,24 @@ bool IsMotion(std::string s)
 	return boo;
 }
 
-bool IsInTrig(std::string s)
+bool GetData::IsInTrig(std::string s)
 {
 	bool boo;
-	if (s.find("Device") != -1) {
+	if (s.find("Device") != -1 || s.find("UserAlarm") != -1) {
 		boo = true;
 	}
 	else {
 		boo = false;
 	}
 	return boo;
+}
+
+std::stringstream& GetData::returnStream()
+{
+	return stream;
+}
+
+std::string GetData::returnManu()
+{
+	return Manufacturer;
 }

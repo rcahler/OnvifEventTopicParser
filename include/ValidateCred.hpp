@@ -1,10 +1,20 @@
 #ifndef _ValCred_
 #define _ValCred_
 
-#include "Camera.h"
 #include <string>
 
-using namespace std;
+class ValidateCredentials {
+public:
+	ValidateCredentials(int argc, char* argv[]);
+public:
+	std::string username;
+	std::string password;
+	std::string url;
 
-struct Camera ValidateCredentials(int argc, char* argv[]);
+	bool fileBoo;
+	std::string fString;
+
+	bool errorBoo;
+	std::string eString;
+};
 #endif

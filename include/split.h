@@ -6,9 +6,7 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 //Splits a string into vectors at every occurence of a specified delimiter 
-vector<string> split(const string &s, char delim);
+std::vector<std::string> split(const std::string &s, char delim);
 
 #endif // !_SPLIT_

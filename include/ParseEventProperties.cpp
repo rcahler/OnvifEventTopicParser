@@ -44,7 +44,7 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 					}
 					if (it->atts->next) {
 						for (xsd__anyAttribute::iterator it = domNext.att_begin(); it != domNext.att_end(); ++it) {
-							stream << " " << it->get_text() << endl;
+							stream << " " << it->get_text() << std::endl;
 						}
 					}
 				}
