@@ -18,8 +18,11 @@ int Device::SyncCamTime()
 	if (i == 0) {
 		tt__DateTime* camTime = GSDATresp.SystemDateAndTime->UTCDateTime;
 		time_t localTime = time(NULL);
-		struct tm* offsetStruct = gmtime(&localTime);
-		double offset = findDiffTime(*offsetStruct, *camTime, GSDATresp.SystemDateAndTime->DaylightSavings);
+		struct tm offsetStruct;
+		//= gmtime(&localTime);
+		gmtime_s(&offsetStruct, &localTime);
+
+		double offset = findDiffTime(offsetStruct, *camTime, GSDATresp.SystemDateAndTime->DaylightSavings);
 
 		soap_wsse_add_Security(&deviceBindProxy);
 		LocalAddUsernameTokenDigest(&deviceBindProxy, offset);
@@ -28,17 +31,29 @@ int Device::SyncCamTime()
 		_tds__SetSystemDateAndTime SetDateTimeReq;
 		_tds__SetSystemDateAndTimeResponse SetSystemDateAndTimeResponse;
 		SetDateTimeReq.DateTimeType = (tt__SetDateTimeType)0;// DateTimeType - 0=manual, 1=NTP;
-		SetDateTimeReq.DaylightSavings = (bool)offsetStruct->tm_isdst;// DayLightSavings;
+		SetDateTimeReq.DaylightSavings = (bool)offsetStruct.tm_isdst;// DayLightSavings;
 																	  
 		tt__TimeZone* TiZ = new tt__TimeZone;
 		std::string TimeZ = "GMT-5:00:00";
 		TiZ->TZ = TimeZ;	SetDateTimeReq.TimeZone = TiZ;
 		// set the camera time to match pc time for authentication simplicity
 		tt__DateTime* UTCDateTime = new tt__DateTime;
-		time_t NOW = time(NULL);	struct tm* noww = gmtime(&NOW);
-		tt__Date thisDate;		thisDate.Day = noww->tm_mday;	thisDate.Month = noww->tm_mon + 1;	thisDate.Year = noww->tm_year + 1900; // added 1 to month and 1900 to year to account for how tm defines those values
-		tt__Time thisTime;		thisTime.Hour = noww->tm_hour + 1;	thisTime.Minute = noww->tm_min;	thisTime.Second = noww->tm_sec;
-		UTCDateTime->Date = &thisDate;	UTCDateTime->Time = &thisTime;
+
+		time_t NOW = time(NULL);
+		struct tm noww;
+		gmtime_s(&noww, &NOW);
+
+		tt__Date thisDate;		
+		thisDate.Day = noww.tm_mday;	
+		thisDate.Month = noww.tm_mon + 1;	
+		thisDate.Year = noww.tm_year + 1900; // added 1 to month and 1900 to year to account for how tm defines those values
+
+		tt__Time thisTime;		
+		thisTime.Hour = noww.tm_hour + 1;
+		thisTime.Minute = noww.tm_min;	
+		thisTime.Second = noww.tm_sec;
+		UTCDateTime->Date = &thisDate;	
+		UTCDateTime->Time = &thisTime;
 
 		SetDateTimeReq.UTCDateTime = UTCDateTime;
 		deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
@@ -119,7 +134,6 @@ int Device::GetRelayOutputs()
 	return SOAP_OK;
 }
 
-
 int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 {
 	/* start soap_wsse_add_UsernameTokenDigest; Taken from wsseapi.cpp*/
@@ -127,7 +141,9 @@ int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 	_wsse__Security *security = soap_wsse_add_Security(soapOff);
 	time_t now = time(NULL);
 	now -= (time_t)cam_pc_offset; //offset so digest comes out correctly (synced times between cam and pc);
-	struct tm* offsetStruct = gmtime(&now);
+	struct tm offsetStruct;
+	gmtime_s(&offsetStruct, &now);
+
 	const char *created = soap_dateTime2s(soapOff, now);
 	char HA[SOAP_SMD_SHA1_SIZE], HABase64[29];
 	char nonce[20], *nonceBase64;

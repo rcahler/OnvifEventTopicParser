@@ -53,7 +53,8 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	
 	std::cout << "" << std::endl;
 
-	for (int i = 0; i < topics.size(); i++) {
+	//Goes to correct function to parse
+	for (size_t i = 0; i < topics.size(); i++) {
 		auto elements = topics[i].elements;
 		std::string name = topics[i].name;
 		if (elements.size() == 2) {
@@ -67,14 +68,14 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		}
 	}
 
-	JSON_Value *root_value = json_value_init_object();
+	root_value = json_value_init_object();
 	JSON_Object *root_object = json_value_get_object(root_value);
-	char *serialized_string = NULL;
+	
 	json_object_set_string(root_object, "manufacturer", Manufacturer.c_str());
 	
 	if (motionV.size()) {
 		std::string mString;
-		for (int i = 0; i < motionV.size(); i++) {
+		for (size_t i = 0; i < motionV.size(); i++) {
 			if (i == motionV.size() - 1) {
 				mString += motionV[i];
 			}
@@ -88,7 +89,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	
 	if (inputV.size()) {
 		std::string iString;
-		for (int i = 0; i < inputV.size(); i++) {
+		for (size_t i = 0; i < inputV.size(); i++) {
 			if (i == inputV.size() - 1) {
 				iString += inputV[i];
 			}
@@ -99,12 +100,6 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		iString = '[' + iString + ']';
 		json_object_dotset_value(root_object, "input trigger.topic", json_parse_string(iString.c_str()));
 	}
-
-	serialized_string = json_serialize_to_string_pretty(root_value);
-	stream << serialized_string;
-	json_free_serialized_string(serialized_string);
-	json_value_free(root_value);
-	
 }
 
 void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
@@ -297,10 +292,19 @@ bool GetData::IsInTrig(std::string s)
 
 std::stringstream& GetData::returnStream()
 {
+	char *serialized_string = NULL;
+	serialized_string = json_serialize_to_string_pretty(root_value);
+	stream << serialized_string;
+	json_free_serialized_string(serialized_string);
 	return stream;
 }
 
 std::string GetData::returnManu()
 {
 	return Manufacturer;
+}
+
+JSON_Value * GetData::returnRoot()
+{
+	return root_value;
 }

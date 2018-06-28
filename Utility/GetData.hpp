@@ -18,7 +18,8 @@ private://Internal functions
 public://Returns
 	std::stringstream& returnStream();
 	std::string returnManu();
-public:
+	JSON_Value* returnRoot();
+private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_url;
@@ -26,4 +27,5 @@ public:
 	std::vector<std::string> inputV;
 	std::stringstream stream;
 	std::string Manufacturer;
+	JSON_Value * root_value;
 };

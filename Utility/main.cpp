@@ -22,16 +22,15 @@ int main(int argc, char* argv[]) {
 	std::string url = creds.url;
 
 	GetData data(username, password, url);
-	std::stringstream &stream = data.returnStream();
 	std::string name = data.returnManu();
 
 
 	//Opens filestream with an existing file or creates new file
 	if (creds.fileBoo) {
-		SaveToFile(creds.fString, name, stream);
+		SaveToFile(creds.fString, name, data.returnRoot());
 	}
 	else {
-		std::cout << stream.str();
+		std::cout << data.returnStream().str();
 	}
 
 	return 0;

@@ -17,12 +17,15 @@ std::wstring ToWstring(std::string s)
 	return w;
 }
 
-void SaveToFile(std::string filename, std::string manu, std::stringstream& stream) {
+void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	
 	//Allows for filepathes which add the json file into a nonexistant folder, even one nested in another newly created folder
+
+	std::cout << "HERE" << std::endl;
+
 	std::vector<std::string> strings = split(filename, '/');
 	std::wstring base = ToWstring(strings[0]);
-	for (int i = 1; i < strings.size() - 1; i++) {
+	for (size_t i = 1; i < strings.size() - 1; i++) {
 		base +=  L'/' + ToWstring(strings[i]);
 		if (GetFileAttributes(base.c_str()) == INVALID_FILE_ATTRIBUTES) {
 			//creates File path if it does not already exist
@@ -33,9 +36,6 @@ void SaveToFile(std::string filename, std::string manu, std::stringstream& strea
 	std::fstream file;
 	file.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
 	if (!file){file.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);}//New file is created
-
-	std::stringstream buffer;
-	buffer << file.rdbuf();
 
 	file.close();
 
@@ -49,7 +49,7 @@ void SaveToFile(std::string filename, std::string manu, std::stringstream& strea
 
 	
 	bool boo = false;
-	for (int i = 0; i < json_array_get_count(array); i++) {
+	for (size_t i = 0; i < json_array_get_count(array); i++) {
 		JSON_Value* manu_value = json_array_get_value(array, i); //JSON of one individual manufacturer
 		JSON_Object* manu_object = json_value_get_object(manu_value);
 		json_object_get_value(manu_object, "manufacturer");
@@ -60,12 +60,16 @@ void SaveToFile(std::string filename, std::string manu, std::stringstream& strea
 		}
 	}
 
-	if (boo) {
+	if (boo) {//What to do here. Add a new section for specific model? Ignore for now
 		std::cout << "manufacturer: " << manu << " is contained in the JSON" << std::endl;
+		return;
 	}
-	else {
-		std::cout << "manufacturer: " << manu << " is not contained in the JSON" << std::endl;
-	}
+	
+	std::cout << "manufacturer: " << manu << " is not contained in the JSON" << std::endl;
+
+	json_array_append_value(array, element);
+	JSON_Status status = json_serialize_to_file_pretty(root_value, filename.c_str());
+	std::cout << status << std::endl;
 
 	return;
 }
