@@ -12,33 +12,37 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	m_password = pass;
 	m_url = url;
 
+	profile.SetParameters(m_username, m_password, m_url);
+	if (profile.GetProfiles()) {
+		std::cout << "HERE" << std::endl;
+	}
+
 	Device device(m_username, m_password, m_url);
-	Profiles profile(m_username, m_password, m_url);
-	profile.GetProfiles();
+	
 
 	if (device.SyncCamTime() != SOAP_OK) {
-		//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
-		std::cerr << "The camera and local system times could not be synched" << std::endl;
-	}
+			//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
+			std::cerr << "The camera and local system times could not be synched" << std::endl;
+		}
 
 	if (device.GetCapabilities() != SOAP_OK) {
-		std::cerr << "Device Capabilities could not be gotten, the camera could not be connected too" << std::endl;
-		return;
-	}
-	
+			std::cerr << "Device Capabilities could not be gotten, the camera could not be connected too" << std::endl;
+			return;
+		}
+
 	if (device.GetDeviceInformation() != SOAP_OK) {
-		std::cerr << "Device Information could not be gotten" << std::endl;
-		return;
-	}
+			std::cerr << "Device Information could not be gotten" << std::endl;
+			return;
+		}
 
 	std::string event_url = device.evXaddr;
 
 	Event event(m_username, m_password, event_url);
-	
+
 	if (event.GetEventProperties() != SOAP_OK) {
-		std::cerr << "Event Properties could not be gotten" << std::endl;
-		return;
-	}
+			std::cerr << "Event Properties could not be gotten" << std::endl;
+			return;
+		}
 
 	Manufacturer = device.Manufacturer;
 	std::string FirmwareVersion = device.FirmwareVersion;
@@ -46,67 +50,68 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	std::string Model = device.Model;
 	std::string SerialNumber = device.SerialNumber;
 
-	std::vector<soap_dom_element> domVector = event.topics; 
+	std::vector<soap_dom_element> domVector = event.topics;
 
 	std::vector<Topic> topics = ParseEventProperties(domVector);
 
 	if (topics.size() < 1) {
-		std::cerr << "This camera does not support topics" << std::endl;
-		return;
-	}
+			std::cerr << "This camera does not support topics" << std::endl;
+			return;
+		}
 
 	/*std::cout << "Number of topics: " << topics.size() << std::endl;
 	for (int i = 0; i < topics.size(); i++) {
 		std::cout << "Topic " << i << " is " << topics[i].name << std::endl;
 	}*/
-	
+
 	std::cout << "" << std::endl;
 
 	//Goes to correct function to parse
 	for (size_t i = 0; i < topics.size(); i++) {
-		auto elements = topics[i].elements;
-		std::string name = topics[i].name;
-		if (elements.size() == 2) {
-			ToJsonTopicTwoElements(name, elements, &device);
-		}
-		else if (elements.size() > 2) {
-			ToJsonTopicMoreElements(name, elements, &device);
-		}
-		else if (elements.size() == 1) {
-			ToJsonTopicLessElements(name, elements, &device);
-		}
-		else {
-			std::cerr << "ERROR" << std::endl;
-		}
-	}
-
-	root_value = json_value_init_object();
-	JSON_Object *root_object = json_value_get_object(root_value);
-	
-	json_object_set_string(root_object, "manufacturer", Manufacturer.c_str());
-	
-	//Adds all motion topics to the Json
-	if (motionV.size()) {
-		std::string mString;
-		for (size_t i = 0; i < motionV.size(); i++) {
-			if (i == motionV.size() - 1) {
-				mString += motionV[i];
+			auto elements = topics[i].elements;
+			std::string name = topics[i].name;
+			if (elements.size() == 2) {
+				ToJsonTopicTwoElements(name, elements, &device);
+			}
+			else if (elements.size() > 2) {
+				ToJsonTopicMoreElements(name, elements, &device);
+			}
+			else if (elements.size() == 1) {
+				ToJsonTopicLessElements(name, elements, &device);
 			}
 			else {
-				mString += motionV[i] + ",";
+				std::cerr << "ERROR" << std::endl;
 			}
 		}
-		mString = '[' + mString + ']';
-		json_object_dotset_value(root_object, "motion.topic", json_parse_string(mString.c_str()));
-	}
-	
-	//Adds all input trigger topics to the Json
+
+	root_value = json_value_init_object();
+
+	JSON_Object *root_object = json_value_get_object(root_value);
+
+	json_object_set_string(root_object, "manufacturer", Manufacturer.c_str());
+
+		//Adds all motion topics to the Json
+	if (motionV.size()) {
+			std::string mString;
+			for (size_t i = 0; i < motionV.size(); i++) {
+				if (i == motionV.size() - 1) {
+					mString += motionV[i];
+				}
+				else {
+					mString += motionV[i] + ",";
+				}
+			}
+			mString = '[' + mString + ']';
+			json_object_dotset_value(root_object, "motion.topic", json_parse_string(mString.c_str()));
+		}
+
+		//Adds all input trigger topics to the Json
 	if (inputV.size()) {
 		std::string iString;
 		for (size_t i = 0; i < inputV.size(); i++) {
 			if (i == inputV.size() - 1) {
-				iString += inputV[i];
-			}
+					iString += inputV[i];	
+				}
 			else {
 				iString += inputV[i] + ",";
 			}
@@ -272,12 +277,17 @@ std::string GetData::FindReferenceToken(std::string s, Device* device)
 
 void GetData::DealWithTypes(JSON_Object* json, std::pair<std::string, std::string> pair, Device* device)
 {
+
 	if (pair.second.find("boolean") != std::string::npos) {//Figure out how to differentiate the booleans
 		json_object_set_string(json, "boolean2", pair.second.c_str());
 	}
 	else if ((pair.first.find("Token") != std::string::npos) || (pair.second.find("Token") != std::string::npos)) {
 		std::string token = FindReferenceToken(pair.second, device);
 		json_object_set_string(json, "token2", token.c_str());
+
+		
+
+
 	}
 	else if (pair.second.find("string") != std::string::npos) {
 		json_object_set_string(json, "name", pair.first.c_str());

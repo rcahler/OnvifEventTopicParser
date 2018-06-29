@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 		SaveToFile(creds.fString, name, data.returnRoot());
 	}
 	else {
-		//std::cout << data.returnStream().str();
+		std::cout << data.returnStream().str();
 	}
 }
 

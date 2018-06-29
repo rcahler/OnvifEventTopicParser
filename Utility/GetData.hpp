@@ -3,6 +3,7 @@
 #include "parson.h"
 #include <sstream>
 #include "device.hpp"
+#include "profiles.hpp"
 
 class GetData {
 public: //Constructor
@@ -28,4 +29,5 @@ private:
 	std::stringstream stream;
 	std::string Manufacturer;
 	JSON_Value * root_value;
+	Profiles profile;
 };
