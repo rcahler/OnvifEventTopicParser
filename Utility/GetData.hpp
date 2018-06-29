@@ -2,19 +2,19 @@
 #include <string>
 #include "parson.h"
 #include <sstream>
-
-
-
+#include "device.hpp"
 
 class GetData {
 public: //Constructor
 	GetData(std::string user, std::string pass, std::string url);
 private://Internal functions
-	void ToJsonTopicTwoElements(std::string, std::vector<std::pair<std::string, std::string>>);
-	void ToJsonTopicMoreElements(std::string, std::vector<std::pair<std::string, std::string>>);
-	void ToJsonTopicLessElements(std::string, std::vector<std::pair<std::string, std::string>>);
+	void ToJsonTopicTwoElements(std::string, std::vector<std::pair<std::string, std::string>>, Device*);
+	void ToJsonTopicMoreElements(std::string, std::vector<std::pair<std::string, std::string>>, Device*);
+	void ToJsonTopicLessElements(std::string, std::vector<std::pair<std::string, std::string>>, Device*);
 	bool IsMotion(std::string);
 	bool IsInTrig(std::string);
+	std::string FindReferenceToken(std::string, Device*);
+	void DealWithTypes(JSON_Object*, std::pair<std::string, std::string>, Device*);
 public://Returns
 	std::stringstream& returnStream();
 	std::string returnManu();

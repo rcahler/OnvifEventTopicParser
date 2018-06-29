@@ -1,5 +1,6 @@
 #include "device.hpp"
 #include "wsseapi.h"
+#include <ctime>
 
 Device::Device(std::string user, std::string pass, std::string url) {
 	m_username = user;
@@ -17,7 +18,7 @@ int Device::SyncCamTime()
 	int i = deviceBindProxy.GetSystemDateAndTime(&GSDAT, GSDATresp);
 	if (i == 0) {
 		tt__DateTime* camTime = GSDATresp.SystemDateAndTime->UTCDateTime;
-		time_t localTime = time(NULL);
+		time_t localTime = std::time(NULL);
 		struct tm offsetStruct;
 		//= gmtime(&localTime);
 		gmtime_s(&offsetStruct, &localTime);
@@ -39,7 +40,7 @@ int Device::SyncCamTime()
 		// set the camera time to match pc time for authentication simplicity
 		tt__DateTime* UTCDateTime = new tt__DateTime;
 
-		time_t NOW = time(NULL);
+		time_t NOW = std::time(NULL);
 		struct tm noww;
 		gmtime_s(&noww, &NOW);
 

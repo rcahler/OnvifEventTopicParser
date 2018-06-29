@@ -5,7 +5,7 @@
 #include "GetData.hpp"
 #include "main.h"
 #include "SaveToFile.hpp"
-
+#include "device.hpp"
 
 int main(int argc, char* argv[]) {
 
@@ -30,10 +30,8 @@ int main(int argc, char* argv[]) {
 		SaveToFile(creds.fString, name, data.returnRoot());
 	}
 	else {
-		std::cout << data.returnStream().str();
+		//std::cout << data.returnStream().str();
 	}
-
-	return 0;
 }
 
 ////Not sure if this is needed yet

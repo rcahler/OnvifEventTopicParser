@@ -4,3 +4,4 @@
 
 std::wstring ToWstring(std::string);
 void SaveToFile(std::string, std::string, JSON_Value*);
+JSON_Value* CreateJsonHeader();

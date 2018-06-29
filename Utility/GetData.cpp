@@ -1,7 +1,9 @@
 #include "device.hpp"
 #include "event.hpp"
+#include "profiles.hpp"
 #include "GetData.hpp"
 #include "ParseEventProperties.h"
+#include "soapRecordingBindingProxy.h"
 #include "Topic.h"
 #include "parson.h"
 
@@ -11,6 +13,8 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	m_url = url;
 
 	Device device(m_username, m_password, m_url);
+	Profiles profile(m_username, m_password, m_url);
+	profile.GetProfiles();
 
 	if (device.SyncCamTime() != SOAP_OK) {
 		//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
@@ -30,7 +34,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	std::string event_url = device.evXaddr;
 
 	Event event(m_username, m_password, event_url);
-
+	
 	if (event.GetEventProperties() != SOAP_OK) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
 		return;
@@ -50,6 +54,11 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		std::cerr << "This camera does not support topics" << std::endl;
 		return;
 	}
+
+	/*std::cout << "Number of topics: " << topics.size() << std::endl;
+	for (int i = 0; i < topics.size(); i++) {
+		std::cout << "Topic " << i << " is " << topics[i].name << std::endl;
+	}*/
 	
 	std::cout << "" << std::endl;
 
@@ -58,13 +67,16 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		auto elements = topics[i].elements;
 		std::string name = topics[i].name;
 		if (elements.size() == 2) {
-			ToJsonTopicTwoElements(name, elements);
+			ToJsonTopicTwoElements(name, elements, &device);
 		}
 		else if (elements.size() > 2) {
-			ToJsonTopicMoreElements(name, elements);
+			ToJsonTopicMoreElements(name, elements, &device);
+		}
+		else if (elements.size() == 1) {
+			ToJsonTopicLessElements(name, elements, &device);
 		}
 		else {
-			ToJsonTopicLessElements(name, elements);
+			std::cerr << "ERROR" << std::endl;
 		}
 	}
 
@@ -73,6 +85,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	
 	json_object_set_string(root_object, "manufacturer", Manufacturer.c_str());
 	
+	//Adds all motion topics to the Json
 	if (motionV.size()) {
 		std::string mString;
 		for (size_t i = 0; i < motionV.size(); i++) {
@@ -87,6 +100,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		json_object_dotset_value(root_object, "motion.topic", json_parse_string(mString.c_str()));
 	}
 	
+	//Adds all input trigger topics to the Json
 	if (inputV.size()) {
 		std::string iString;
 		for (size_t i = 0; i < inputV.size(); i++) {
@@ -102,168 +116,112 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	}
 }
 
-void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
 {
+
+
+	JSON_Value *topic_value = json_value_init_object();
+	JSON_Object *topic_object = json_value_get_object(topic_value);
+	json_object_set_string(topic_object, "name", name.c_str());
+
+	JSON_Value *source_value = json_value_init_object();
+	JSON_Object *source_object = json_value_get_object(source_value);
+	JSON_Value *data_value = json_value_init_object();
+	JSON_Object *data_object = json_value_get_object(data_value);
+
+	json_object_set_string(source_object, "name", elements[0].first.c_str());
+	json_object_set_string(data_object, "name", elements[1].first.c_str());
+
+	DealWithTypes(source_object, elements[0], device);
+	DealWithTypes(data_object, elements[1], device);
+	
+	RecordingBindingProxy record;
+	if (device->GCresp.Capabilities->Extension) {
+		if (device->GCresp.Capabilities->Extension->Recording) {
+			//record.soap_endpoint = device->GCresp.Capabilities->Extension->Recording->XAddr.c_str();
+			record.soap_endpoint = device->deXaddr.c_str();
+			_trc__GetServiceCapabilities gsc;
+			_trc__GetServiceCapabilitiesResponse gscresp;
+
+			record.GetServiceCapabilities(&gsc, gscresp);
+
+			//std::cout << "DynamicRecordings: " << gscresp.Capabilities->DynamicRecordings << std::endl;
+		}
+	}
+	
+
+
+	json_object_set_value(topic_object, "source", source_value);
+	json_object_set_value(topic_object, "data", data_value);
+
 	if (IsMotion(name)) {
-		JSON_Value *motion_value = json_value_init_object();
-		JSON_Object *motion_object = json_value_get_object(motion_value);
-		json_object_set_string(motion_object, "name", name.c_str());
-
-		JSON_Value *source_value = json_value_init_object();
-		JSON_Object *source_object = json_value_get_object(source_value);
-		JSON_Value *data_value = json_value_init_object();
-		JSON_Object *data_object = json_value_get_object(data_value);
-
-		json_object_set_string(source_object, "name", elements[0].first.c_str());
-		json_object_set_string(data_object, "name", elements[1].first.c_str());
-
-		//source
-		if (elements[0].second.find("boolean")) {
-			json_object_set_string(source_object, "on", "true");
-			json_object_set_string(source_object, "off", "false");
-		}
-		else { //non-boolean data
-			json_object_set_string(source_object, "Not", "Boolean");
-			json_object_set_string(source_object, "Fix", "Later");
-		}
-
-
-		//data
-		if (elements[1].second.find("boolean")) {
-			json_object_set_string(data_object, "on", "true");
-			json_object_set_string(data_object, "off", "false");
-		}
-		else { //non-boolean data
-			json_object_set_string(data_object, "Not", "Boolean");
-			json_object_set_string(data_object, "Fix", "Later");
-		}
-
-
-		json_object_set_value(motion_object, "source", source_value);
-		json_object_set_value(motion_object, "data", data_value);
-
-		motionV.push_back(std::string(json_serialize_to_string(motion_value)));
+		motionV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else if (IsInTrig(name)) {
-		JSON_Value *input_value = json_value_init_object();
-		JSON_Object *input_object = json_value_get_object(input_value);
-		json_object_set_string(input_object, "name", name.c_str());
-
-		//The source values are more likely to be arrays of data, while the data should be the same format
-		JSON_Value *source_value = json_value_init_object();
-		JSON_Object *source_object = json_value_get_object(source_value);
-		JSON_Value *data_value = json_value_init_object();
-		JSON_Object *data_object = json_value_get_object(data_value);
-
-		json_object_set_string(source_object, "name", elements[0].first.c_str());
-		json_object_set_string(data_object, "name", elements[1].first.c_str());
-
-
-		json_object_set_string(source_object, "data type", elements[0].second.c_str());
-
-
-		//data
-		if (elements[1].second.find("boolean")) {
-			json_object_set_string(data_object, "on", "true");
-			json_object_set_string(data_object, "off", "false");
-		}
-		else { //non-boolean data
-			json_object_set_string(data_object, "Not", "Boolean");
-			json_object_set_string(data_object, "Fix", "Later");
-		}
-
-		json_object_set_value(input_object, "source", source_value);
-		json_object_set_value(input_object, "data", data_value);
-
-		inputV.push_back(std::string(json_serialize_to_string(input_value)));
+		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		//std::cout << "" << std::endl << "Neither motion or input trigger: " << name << std::endl;
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
+	return;
 }
 
-void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
 {
+	JSON_Value *topic_value = json_value_init_object();
+	JSON_Object *topic_object = json_value_get_object(topic_value);
 	if (IsMotion(name)) {
-		/*std::cout << name << std::endl;
-		for (int i = 0; i < elements.size(); i++) {
-			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
-		}
-		std::cout << "" << std::endl;*/
+		motionV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else if (IsInTrig(name)) {
-		/*std::cout << name << std::endl;
-		for (int i = 0; i < elements.size(); i++) {
-			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
-		}
-		std::cout << "" << std::endl;*/
+		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		/*std::cout << name << std::endl;
-		for (int i = 0; i < elements.size(); i++) {
-			std::cout << "name:" << elements[i].first << " type:" << elements[i].second << std::endl;
-		}
-		std::cout << "" << std::endl;*/
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 
+	return;
 }
 
-void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
 {
+	JSON_Value *topic_value = json_value_init_object();
+	JSON_Object *topic_object = json_value_get_object(topic_value);
+	json_object_set_string(topic_object, "name", name.c_str());
+
+	JSON_Value *data_value = json_value_init_object();
+	JSON_Object *data_object = json_value_get_object(data_value);
+
+	json_object_set_string(data_object, "name", elements[0].first.c_str());
+
+	//data
+	if (elements[0].second.find("boolean") != std::string::npos) {
+		json_object_set_string(data_object, "on", "true");
+		json_object_set_string(data_object, "off", "false");
+	}
+	else if ((elements[0].second.find("token") != std::string::npos) || (elements[0].second.find("Token") != std::string::npos)) {
+		std::string token = FindReferenceToken(elements[0].second, device);
+		json_object_set_string(data_object, "token", token.c_str());
+	}
+	else { //non-boolean data
+		json_object_set_string(data_object, "datatype", elements[0].second.c_str());
+	}
+
+	json_object_set_value(topic_object, "data", data_value);
 	if (IsMotion(name)) {
-		JSON_Value *motion_value = json_value_init_object();
-		JSON_Object *motion_object = json_value_get_object(motion_value);
-		json_object_set_string(motion_object, "name", name.c_str());
-
-		JSON_Value *data_value = json_value_init_object();
-		JSON_Object *data_object = json_value_get_object(data_value);
-
-		json_object_set_string(data_object, "name", elements[0].first.c_str());
-
-		//data
-		if (elements[0].second.find("boolean")) {
-			json_object_set_string(data_object, "on", "true");
-			json_object_set_string(data_object, "off", "false");
+		if (!std::string(json_serialize_to_string(topic_value)).empty()) {
+			motionV.push_back(std::string(json_serialize_to_string(topic_value)));
 		}
-		else { //non-boolean data
-			json_object_set_string(data_object, "Not", "Boolean");
-			json_object_set_string(data_object, "Fix", "Later");
-		}
-
-		json_object_set_value(motion_object, "data", data_value);
-
-		motionV.push_back(std::string(json_serialize_to_string(motion_value)));
 	}
 	else if (IsInTrig(name)) {
-		JSON_Value *input_value = json_value_init_object();
-		JSON_Object *input_object = json_value_get_object(input_value);
-		json_object_set_string(input_object, "name", name.c_str());
-
-		//The source values are more likely to be arrays of data, while the data should be the same format
-		JSON_Value *data_value = json_value_init_object();
-		JSON_Object *data_object = json_value_get_object(data_value);
-		json_object_set_string(data_object, "name", elements[0].first.c_str());
-
-		//data
-		if (elements[0].second.find("boolean")) {
-			json_object_set_string(data_object, "on", "true");
-			json_object_set_string(data_object, "off", "false");
+		if (!std::string(json_serialize_to_string(topic_value)).empty()) {
+			inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 		}
-		else { //non-boolean data
-			json_object_set_string(data_object, "Not", "Boolean");
-			json_object_set_string(data_object, "Fix", "Later");
-		}
-
-		json_object_set_value(input_object, "data", data_value);
-		inputV.push_back(std::string(json_serialize_to_string(input_value)));
 	}
 	else {
-		/*std::cout << "ToJsonTopicLessElements: " << "Else" << std::endl;
-		std::cout << name << std::endl;
-		std::cout << elements[0].first << std::endl;
-		std::cout << elements[0].second << std::endl;
-		std::cout << "" << std::endl;*/
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
+	return;
 }
 
 bool GetData::IsMotion(std::string s)
@@ -288,6 +246,51 @@ bool GetData::IsInTrig(std::string s)
 		boo = false;
 	}
 	return boo;
+}
+
+std::string GetData::FindReferenceToken(std::string s, Device* device)
+{
+	if (s.find("AlarmInToken") != std::string::npos) {
+		
+	}
+	else if (s.find("InputToken") != std::string::npos) {
+		
+	}
+	else if (s.find("RelayToken") != std::string::npos) {
+		
+	}
+	else if (s.find("ReferenceToken") != std::string::npos) {//I think this is the video source tokens
+
+	}
+	else {
+		std::cerr << "Unrecognized token: " << s << std::endl;
+	}
+
+	std::string token = s;
+	return token;
+}
+
+void GetData::DealWithTypes(JSON_Object* json, std::pair<std::string, std::string> pair, Device* device)
+{
+	if (pair.second.find("boolean") != std::string::npos) {//Figure out how to differentiate the booleans
+		json_object_set_string(json, "boolean2", pair.second.c_str());
+	}
+	else if ((pair.first.find("Token") != std::string::npos) || (pair.second.find("Token") != std::string::npos)) {
+		std::string token = FindReferenceToken(pair.second, device);
+		json_object_set_string(json, "token2", token.c_str());
+	}
+	else if (pair.second.find("string") != std::string::npos) {
+		json_object_set_string(json, "name", pair.first.c_str());
+		json_object_set_string(json, "datatype", pair.second.c_str());
+	}
+	else if (pair.second.find("int") != std::string::npos) {
+		json_object_set_string(json, "name", pair.first.c_str());
+		json_object_set_string(json, "datatype", pair.second.c_str());
+	}
+	else {
+		json_object_set_string(json, "name", pair.first.c_str());
+		json_object_set_string(json, "datatype", pair.second.c_str());
+	}
 }
 
 std::stringstream& GetData::returnStream()

@@ -7,21 +7,13 @@
 #include <windows.h>
 #include <AtlBase.h>
 #include <atlconv.h>
+#include <ctime>
 #include <split.h>
 #include "parson.h"
-
-std::wstring ToWstring(std::string s)
-{
-	CA2W ca2w(s.c_str());
-	std::wstring w = ca2w.m_psz;
-	return w;
-}
 
 void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	
 	//Allows for filepathes which add the json file into a nonexistant folder, even one nested in another newly created folder
-
-	std::cout << "HERE" << std::endl;
 
 	std::vector<std::string> strings = split(filename, '/');
 	std::wstring base = ToWstring(strings[0]);
@@ -34,12 +26,24 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	}
 	
 	std::fstream file;
+
 	file.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
-	if (!file){file.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);}//New file is created
+	if (!file){
+		file.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
+	}//New file is created
 
 	file.close();
 
-	JSON_Value *root_value = json_parse_file(filename.c_str());
+	JSON_Value *root_value;
+	root_value = json_parse_file(filename.c_str());
+
+	if (json_parse_file(filename.c_str())) {
+		root_value = json_parse_file(filename.c_str());
+	}
+	else {
+		root_value = CreateJsonHeader();
+	}
+
 	JSON_Object *object = json_value_get_object(root_value);
 
 	JSON_Value* onvif_value = json_object_get_value(object, "onvifnvc");
@@ -69,7 +73,33 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 
 	json_array_append_value(array, element);
 	JSON_Status status = json_serialize_to_file_pretty(root_value, filename.c_str());
-	std::cout << status << std::endl;
 
 	return;
+}
+
+std::wstring ToWstring(std::string s)
+{
+	CA2W ca2w(s.c_str());
+	std::wstring w = ca2w.m_psz;
+	return w;
+}
+
+JSON_Value* CreateJsonHeader() {
+	JSON_Value* root = json_value_init_object();
+	JSON_Object *root_object = json_value_get_object(root);
+
+	std::time_t time = std::time(NULL);
+	std::tm* tm = std::localtime(&time);
+
+	std::stringstream s;
+	s << tm->tm_year + 1900 << "-" << tm->tm_mon + 1 << "-" << tm->tm_mday; 
+
+	json_object_set_string(root_object, "version", "1.0.000"); //Check what version this should be
+	json_object_set_string(root_object, "modified-date", s.str().c_str());
+	json_object_set_string(root_object, "owner", "onvifnvc");
+
+	//Figure out if anything needs to be done for globals
+	json_object_dotset_value(root_object, "onvifnvc.items", json_parse_string("[]"));
+
+	return root;
 }

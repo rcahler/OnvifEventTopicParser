@@ -23,6 +23,7 @@
     <ClCompile Include="..\include\device.cpp" />
     <ClCompile Include="..\include\event.cpp" />
     <ClCompile Include="..\include\ParseEventProperties.cpp" />
+    <ClCompile Include="..\include\profiles.cpp" />
     <ClCompile Include="..\include\SaveToFile.cpp" />
     <ClCompile Include="..\include\split.cpp" />
     <ClCompile Include="..\include\ValidateCred.cpp" />
@@ -34,6 +35,7 @@
     <ClInclude Include="..\include\device.hpp" />
     <ClInclude Include="..\include\event.hpp" />
     <ClInclude Include="..\include\ParseEventProperties.h" />
+    <ClInclude Include="..\include\profiles.hpp" />
     <ClInclude Include="..\include\SaveToFile.hpp" />
     <ClInclude Include="..\include\split.h" />
     <ClInclude Include="..\include\ValidateCred.hpp" />

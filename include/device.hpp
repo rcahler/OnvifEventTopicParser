@@ -22,9 +22,6 @@ private: //Classwide variables
 	std::string m_password;
 	std::string m_url;
 	DeviceBindingProxy deviceBindProxy;
-	_tds__GetDeviceInformationResponse GDIresp;
-	_tds__GetCapabilitiesResponse GCresp;
-	_tds__GetRelayOutputsResponse GROresp;
 public://Xaddr
 	std::string anXaddr;
 	std::string deXaddr;
@@ -32,6 +29,9 @@ public://Xaddr
 	std::string imXaddr;
 	std::string meXaddr;
 	std::string ptzXaddr;
+	_tds__GetDeviceInformationResponse GDIresp;
+	_tds__GetCapabilitiesResponse GCresp;
+	_tds__GetRelayOutputsResponse GROresp;
 public://Variables from the camera that need to be passed
 	std::string Manufacturer;
 	std::string FirmwareVersion;
