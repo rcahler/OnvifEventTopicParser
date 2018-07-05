@@ -2,69 +2,58 @@
 #include "wsseapi.h"
 #include <ctime>
 
-Device::Device(std::string user, std::string pass, std::string url) {
-	m_username = user;
-	m_password = pass;
-	m_url = url;
-	deviceBindProxy.soap_endpoint = m_url.c_str();
-	deviceBindProxy.userid = m_username.c_str();
-	deviceBindProxy.passwd = m_password.c_str();
-}
+Device::Device() {}
 
 int Device::SyncCamTime()
 {
 	_tds__GetSystemDateAndTime GSDAT;
 	_tds__GetSystemDateAndTimeResponse GSDATresp;
-	int i = deviceBindProxy.GetSystemDateAndTime(&GSDAT, GSDATresp);
-	if (i == 0) {
-		tt__DateTime* camTime = GSDATresp.SystemDateAndTime->UTCDateTime;
-		time_t localTime = std::time(NULL);
-		struct tm offsetStruct;
-		//= gmtime(&localTime);
-		gmtime_s(&offsetStruct, &localTime);
-
-		double offset = findDiffTime(offsetStruct, *camTime, GSDATresp.SystemDateAndTime->DaylightSavings);
-
-		soap_wsse_add_Security(&deviceBindProxy);
-		LocalAddUsernameTokenDigest(&deviceBindProxy, offset);
-
-		// creating and setting parameter for the set date and time request
-		_tds__SetSystemDateAndTime SetDateTimeReq;
-		_tds__SetSystemDateAndTimeResponse SetSystemDateAndTimeResponse;
-		SetDateTimeReq.DateTimeType = (tt__SetDateTimeType)0;// DateTimeType - 0=manual, 1=NTP;
-		SetDateTimeReq.DaylightSavings = (bool)offsetStruct.tm_isdst;// DayLightSavings;
-																	  
-		tt__TimeZone* TiZ = new tt__TimeZone;
-		std::string TimeZ = "GMT-5:00:00";
-		TiZ->TZ = TimeZ;	SetDateTimeReq.TimeZone = TiZ;
-		// set the camera time to match pc time for authentication simplicity
-		tt__DateTime* UTCDateTime = new tt__DateTime;
-
-		time_t NOW = std::time(NULL);
-		struct tm noww;
-		gmtime_s(&noww, &NOW);
-
-		tt__Date thisDate;		
-		thisDate.Day = noww.tm_mday;	
-		thisDate.Month = noww.tm_mon + 1;	
-		thisDate.Year = noww.tm_year + 1900; // added 1 to month and 1900 to year to account for how tm defines those values
-
-		tt__Time thisTime;		
-		thisTime.Hour = noww.tm_hour + 1;
-		thisTime.Minute = noww.tm_min;	
-		thisTime.Second = noww.tm_sec;
-		UTCDateTime->Date = &thisDate;	
-		UTCDateTime->Time = &thisTime;
-
-		SetDateTimeReq.UTCDateTime = UTCDateTime;
-		deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
-		return 0;
+	int result = deviceBindProxy.GetSystemDateAndTime(&GSDAT, GSDATresp);
+	if (result != SOAP_OK) {
+		return result;
 	}
-	else {
-		return 1;
-	}
-
 	
+	tt__DateTime* camTime = GSDATresp.SystemDateAndTime->UTCDateTime;
+	time_t localTime = std::time(NULL);
+	struct tm offsetStruct;
+	//= gmtime(&localTime);
+	gmtime_s(&offsetStruct, &localTime);
+
+	double offset = findDiffTime(offsetStruct, *camTime, GSDATresp.SystemDateAndTime->DaylightSavings);
+
+	soap_wsse_add_Security(&deviceBindProxy);
+	LocalAddUsernameTokenDigest(&deviceBindProxy, offset);
+	// creating and setting parameter for the set date and time request
+	_tds__SetSystemDateAndTime SetDateTimeReq;
+	_tds__SetSystemDateAndTimeResponse SetSystemDateAndTimeResponse;
+	
+	SetDateTimeReq.DateTimeType = (tt__SetDateTimeType)0;// DateTimeType - 0=manual, 1=NTP;
+	SetDateTimeReq.DaylightSavings = (bool)offsetStruct.tm_isdst;// DayLightSavings;
+																	  
+	tt__TimeZone* TiZ = new tt__TimeZone;	
+	std::string TimeZ = "GMT-5:00:00";
+	TiZ->TZ = TimeZ;	SetDateTimeReq.TimeZone = TiZ;
+	// set the camera time to match pc time for authentication simplicity
+	tt__DateTime* UTCDateTime = new tt__DateTime;
+
+	time_t NOW = std::time(NULL);
+	struct tm noww;
+	gmtime_s(&noww, &NOW);
+
+	tt__Date thisDate;		
+	thisDate.Day = noww.tm_mday;	
+	thisDate.Month = noww.tm_mon + 1;	
+	thisDate.Year = noww.tm_year + 1900; // added 1 to month and 1900 to year to account for how tm defines those values
+
+	tt__Time thisTime;		
+	thisTime.Hour = noww.tm_hour + 1;
+	thisTime.Minute = noww.tm_min;	
+	thisTime.Second = noww.tm_sec;
+	UTCDateTime->Date = &thisDate;	
+	UTCDateTime->Time = &thisTime;
+	SetDateTimeReq.UTCDateTime = UTCDateTime;
+	deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
+	return result;
 }
 
 int Device::GetDeviceInformation()
@@ -74,18 +63,14 @@ int Device::GetDeviceInformation()
 	_tds__GetDeviceInformation GDI;
 	int result = deviceBindProxy.GetDeviceInformation(&GDI, GDIresp);
 
-	if (result == SOAP_OK) {
-		Manufacturer = GDIresp.Manufacturer;
-		FirmwareVersion = GDIresp.FirmwareVersion;
-		HardwareId = GDIresp.HardwareId;
-		Model = GDIresp.Model;
-		SerialNumber = GDIresp.SerialNumber;
+	if (result != SOAP_OK) {
+		return result;
 	}
-
-	return result;
-
-
-
+	Manufacturer = GDIresp.Manufacturer;
+	FirmwareVersion = GDIresp.FirmwareVersion;
+	HardwareId = GDIresp.HardwareId;
+	Model = GDIresp.Model;
+	SerialNumber = GDIresp.SerialNumber;
 
 	return result;
 }
@@ -96,7 +81,7 @@ int Device::GetCapabilities()
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 
 	_tds__GetCapabilities GC;
-	deviceBindProxy.GetCapabilities(&GC, GCresp);
+	int result = deviceBindProxy.GetCapabilities(&GC, GCresp);
 	
 	if (GCresp.Capabilities->Analytics) {
 		if (GCresp.Capabilities->Analytics->XAddr.compare(m_url)) {
@@ -121,7 +106,28 @@ int Device::GetCapabilities()
 		evXaddr = m_url;
 	}
 
-	return SOAP_OK;
+	if (GCresp.Capabilities->Media->XAddr.compare(m_url)) {
+		meXaddr = GCresp.Capabilities->Media->XAddr;
+	}
+	else {
+		meXaddr = m_url;
+	}
+
+	if (GCresp.Capabilities->Extension) {
+		if (GCresp.Capabilities->Extension->DeviceIO->XAddr.compare(m_url)) {
+			ioXaddr = GCresp.Capabilities->Extension->DeviceIO->XAddr;
+		}
+		else {
+			ioXaddr = m_url;
+		}
+	}
+	else {
+		ioXaddr = m_url;
+	}
+
+	//std::cout << *GCresp.Capabilities->Device->IO->InputConnectors << "\n";
+
+	return result;
 }
 
 int Device::GetRelayOutputs()
@@ -130,9 +136,19 @@ int Device::GetRelayOutputs()
 	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
 
 	_tds__GetRelayOutputs GRO;
-	deviceBindProxy.GetRelayOutputs(&GRO, GROresp);
+	int result = deviceBindProxy.GetRelayOutputs(&GRO, GROresp);
 
-	return SOAP_OK;
+	return result;
+}
+
+void Device::SetParameters(std::string user, std::string pass, std::string url)
+{
+	m_username = user;
+	m_password = pass;
+	m_url = url;
+	deviceBindProxy.soap_endpoint = m_url.c_str();
+	deviceBindProxy.userid = m_username.c_str();
+	deviceBindProxy.passwd = m_password.c_str();
 }
 
 int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)

@@ -1,19 +1,21 @@
 #pragma once
 #include <string>
-#include "soapMedia2BindingProxy.h"
+#include "soapMediaBindingProxy.h"
 
 class Profiles {
-
 public:
 	Profiles();
 public:
 	int GetProfiles();
 	void SetParameters(std::string user, std::string pass, std::string url);
+	void VideoSource();
 public:
-	_ns8__GetProfilesResponse GPresp;
+	_trt__GetProfilesResponse GPresp; //GetProfiles
+	_trt__GetProfileResponse GPresp1; //GetProfile
 private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_url;
-	Media2BindingProxy media;
+	MediaBindingProxy media;
+	std::vector<tt__Profile*> profiles;
 };

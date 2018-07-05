@@ -8,12 +8,13 @@
 class Device {
 
 public: //Constructor
-	Device(std::string user, std::string pass, std::string url);
+	Device();
 public: //Functions
 	int SyncCamTime();
 	int GetDeviceInformation();
 	int GetCapabilities();
 	int GetRelayOutputs();
+	void SetParameters(std::string user, std::string pass, std::string url);
 private: //Local functions
 	int LocalAddUsernameTokenDigest(struct soap *soapOff, double cam_pc_offset);
 	double findDiffTime(struct tm local_sys, tt__DateTime cameraTime, bool isDST);
@@ -29,6 +30,7 @@ public://Xaddr
 	std::string imXaddr;
 	std::string meXaddr;
 	std::string ptzXaddr;
+	std::string ioXaddr;
 	_tds__GetDeviceInformationResponse GDIresp;
 	_tds__GetCapabilitiesResponse GCresp;
 	_tds__GetRelayOutputsResponse GROresp;

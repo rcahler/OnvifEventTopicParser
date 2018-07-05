@@ -1,20 +1,22 @@
 #include "SaveToFile.hpp"
+#include "removeChar.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <cstdint>
-#include <string>
 #include <windows.h>
 #include <AtlBase.h>
 #include <atlconv.h>
 #include <ctime>
 #include <split.h>
 #include "parson.h"
+#include <string>
+#include <cstdio>
+#include <cerrno>
 
 void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	
 	//Allows for filepathes which add the json file into a nonexistant folder, even one nested in another newly created folder
-
 	std::vector<std::string> strings = split(filename, '/');
 	std::wstring base = ToWstring(strings[0]);
 	for (size_t i = 1; i < strings.size() - 1; i++) {
@@ -26,7 +28,6 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	}
 	
 	std::fstream file;
-
 	file.open(filename, std::fstream::in | std::fstream::out | std::fstream::app);
 	if (!file){
 		file.open(filename, std::fstream::in | std::fstream::out | std::fstream::trunc);
@@ -72,7 +73,17 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	std::cout << "manufacturer: " << manu << " is not contained in the JSON" << std::endl;
 
 	json_array_append_value(array, element);
-	JSON_Status status = json_serialize_to_file_pretty(root_value, filename.c_str());
+
+	//JSON_Status status = json_serialize_to_file_pretty(root_value, filename.c_str());
+
+	char* string = json_serialize_to_string_pretty(root_value);
+
+	removeChar(string, '\\');
+
+	std::ofstream finalfile;
+	finalfile.open(filename);
+	finalfile << string;
+	finalfile.close();
 
 	return;
 }

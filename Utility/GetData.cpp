@@ -1,24 +1,18 @@
 #include "device.hpp"
 #include "event.hpp"
-#include "profiles.hpp"
 #include "GetData.hpp"
 #include "ParseEventProperties.h"
-#include "soapRecordingBindingProxy.h"
+#include "removeChar.h"
 #include "Topic.h"
 #include "parson.h"
+
 
 GetData::GetData(std::string user, std::string pass, std::string url) {
 	m_username = user;
 	m_password = pass;
 	m_url = url;
 
-	profile.SetParameters(m_username, m_password, m_url);
-	if (profile.GetProfiles()) {
-		std::cout << "HERE" << std::endl;
-	}
-
-	Device device(m_username, m_password, m_url);
-	
+	device.SetParameters(user, pass, url);
 
 	if (device.SyncCamTime() != SOAP_OK) {
 			//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
@@ -33,16 +27,26 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	if (device.GetDeviceInformation() != SOAP_OK) {
 			std::cerr << "Device Information could not be gotten" << std::endl;
 			return;
-		}
+	}
 
-	std::string event_url = device.evXaddr;
+	if (device.GetRelayOutputs() != SOAP_OK) {
+		std::cerr << "Relay Outputs could not be gotten" << std::endl;
+		return;
+	}
 
-	Event event(m_username, m_password, event_url);
+	event_url = device.evXaddr;
+	media_url = device.meXaddr;
+	io_url = device.ioXaddr;
+
+	profile.SetParameters(m_username, m_password, media_url);
+	event.SetParameters(m_username, m_password, event_url);
 
 	if (event.GetEventProperties() != SOAP_OK) {
-			std::cerr << "Event Properties could not be gotten" << std::endl;
-			return;
-		}
+		std::cerr << "Event Properties could not be gotten" << std::endl;
+		return;
+	}
+
+	if (profile.GetProfiles() != SOAP_OK)
 
 	Manufacturer = device.Manufacturer;
 	std::string FirmwareVersion = device.FirmwareVersion;
@@ -57,32 +61,25 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	if (topics.size() < 1) {
 			std::cerr << "This camera does not support topics" << std::endl;
 			return;
-		}
-
-	/*std::cout << "Number of topics: " << topics.size() << std::endl;
-	for (int i = 0; i < topics.size(); i++) {
-		std::cout << "Topic " << i << " is " << topics[i].name << std::endl;
-	}*/
-
-	std::cout << "" << std::endl;
+	}
 
 	//Goes to correct function to parse
 	for (size_t i = 0; i < topics.size(); i++) {
-			auto elements = topics[i].elements;
-			std::string name = topics[i].name;
-			if (elements.size() == 2) {
-				ToJsonTopicTwoElements(name, elements, &device);
-			}
-			else if (elements.size() > 2) {
-				ToJsonTopicMoreElements(name, elements, &device);
-			}
-			else if (elements.size() == 1) {
-				ToJsonTopicLessElements(name, elements, &device);
-			}
-			else {
-				std::cerr << "ERROR" << std::endl;
-			}
+		std::vector<std::pair<std::string, std::string>> elements = topics[i].elements;
+		std::string name = topics[i].name;
+		if (elements.size() == 2) {
+			ToJsonTopicTwoElements(name, elements);
 		}
+		else if (elements.size() > 2) {
+			ToJsonTopicMoreElements(name, elements);
+		}
+		else if (elements.size() == 1) {
+			ToJsonTopicLessElements(name, elements);
+		}
+		else {
+			std::cerr << "ERROR" << std::endl;
+		}
+	}
 
 	root_value = json_value_init_object();
 
@@ -121,13 +118,15 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	}
 }
 
-void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
+void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
-
 
 	JSON_Value *topic_value = json_value_init_object();
 	JSON_Object *topic_object = json_value_get_object(topic_value);
-	json_object_set_string(topic_object, "name", name.c_str());
+	
+	char* c_name = &(name[0]);
+	removeChar(c_name, '\\');
+	json_object_set_string(topic_object, "name", c_name);
 
 	JSON_Value *source_value = json_value_init_object();
 	JSON_Object *source_object = json_value_get_object(source_value);
@@ -137,24 +136,8 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	json_object_set_string(source_object, "name", elements[0].first.c_str());
 	json_object_set_string(data_object, "name", elements[1].first.c_str());
 
-	DealWithTypes(source_object, elements[0], device);
-	DealWithTypes(data_object, elements[1], device);
-	
-	RecordingBindingProxy record;
-	if (device->GCresp.Capabilities->Extension) {
-		if (device->GCresp.Capabilities->Extension->Recording) {
-			//record.soap_endpoint = device->GCresp.Capabilities->Extension->Recording->XAddr.c_str();
-			record.soap_endpoint = device->deXaddr.c_str();
-			_trc__GetServiceCapabilities gsc;
-			_trc__GetServiceCapabilitiesResponse gscresp;
-
-			record.GetServiceCapabilities(&gsc, gscresp);
-
-			//std::cout << "DynamicRecordings: " << gscresp.Capabilities->DynamicRecordings << std::endl;
-		}
-	}
-	
-
+	DealWithTypes(source_object, elements[0]);
+	DealWithTypes(data_object, elements[1]);
 
 	json_object_set_value(topic_object, "source", source_value);
 	json_object_set_value(topic_object, "data", data_value);
@@ -171,10 +154,46 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	return;
 }
 
-void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
+void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	JSON_Value *topic_value = json_value_init_object();
 	JSON_Object *topic_object = json_value_get_object(topic_value);
+
+	char* c_name = &(name[0]);
+	removeChar(c_name, '\\');
+	json_object_set_string(topic_object, "name", c_name);
+
+	JSON_Value *source_value = json_value_init_object();
+	JSON_Object *source_object = json_value_get_object(source_value);
+	JSON_Value *data_value = json_value_init_object();
+	JSON_Object *data_object = json_value_get_object(data_value);
+
+	json_object_set_string(source_object, "name", elements[0].first.c_str());
+	DealWithTypes(source_object, elements[0]);
+	elements.erase(elements.begin());
+
+	if (elements[0].first.find("Analytics") != std::string::npos) {
+		elements.erase(elements.begin());
+	}
+
+	if ((elements[0].second.find("string") != std::string::npos) && (elements.size() > 1)) {
+		elements.erase(elements.begin());
+		json_object_set_string(data_object, "name", elements[0].first.c_str());
+		DealWithTypes(data_object, elements[0]);
+	}
+
+	/*std::cout << name << std::endl;
+	for (size_t i = 0; i < elements.size(); i++) {
+		std::cout << elements[i].first << std::endl;
+		std::cout << elements[i].second << std::endl;
+		std::cout << "" << std::endl;
+	}
+	std::cout << "" << std::endl;
+	std::cout << "" << std::endl;*/
+
+	json_object_set_value(topic_object, "source", source_value);
+	json_object_set_value(topic_object, "data", data_value);
+
 	if (IsMotion(name)) {
 		motionV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
@@ -188,7 +207,7 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 	return;
 }
 
-void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements, Device* device)
+void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	JSON_Value *topic_value = json_value_init_object();
 	JSON_Object *topic_object = json_value_get_object(topic_value);
@@ -205,7 +224,7 @@ void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<st
 		json_object_set_string(data_object, "off", "false");
 	}
 	else if ((elements[0].second.find("token") != std::string::npos) || (elements[0].second.find("Token") != std::string::npos)) {
-		std::string token = FindReferenceToken(elements[0].second, device);
+		std::string token = FindReferenceToken(elements[0]);
 		json_object_set_string(data_object, "token", token.c_str());
 	}
 	else { //non-boolean data
@@ -253,41 +272,62 @@ bool GetData::IsInTrig(std::string s)
 	return boo;
 }
 
-std::string GetData::FindReferenceToken(std::string s, Device* device)
+std::string GetData::FindReferenceToken(std::pair<std::string, std::string> pair)
 {
-	if (s.find("AlarmInToken") != std::string::npos) {
-		
-	}
-	else if (s.find("InputToken") != std::string::npos) {
-		
-	}
-	else if (s.find("RelayToken") != std::string::npos) {
-		
-	}
-	else if (s.find("ReferenceToken") != std::string::npos) {//I think this is the video source tokens
+	std::string token;
 
+	if (pair.second.find("AlarmInToken") != std::string::npos) {
+	}
+	else if (pair.second.find("InputToken") != std::string::npos) {
+	}
+	else if (pair.second.find("RelayToken") != std::string::npos) {
+	}
+	else if (pair.second.find("ReferenceToken") != std::string::npos) {
+		if (pair.first.find("VideoSource") != std::string::npos) {
+
+		} else if (pair.first.find("Input") != std::string::npos) {
+			
+
+
+		}
+		else if (pair.first.find("Relay") != std::string::npos) {
+		}
+		else {
+		}
 	}
 	else {
-		std::cerr << "Unrecognized token: " << s << std::endl;
+		std::cerr << "Unrecognized token: " << pair.second << std::endl;
 	}
 
-	std::string token = s;
+	token = pair.second;
+
 	return token;
 }
 
-void GetData::DealWithTypes(JSON_Object* json, std::pair<std::string, std::string> pair, Device* device)
+void GetData::DealWithTypes(JSON_Object* json, std::pair<std::string, std::string> pair)
 {
 
-	if (pair.second.find("boolean") != std::string::npos) {//Figure out how to differentiate the booleans
-		json_object_set_string(json, "boolean2", pair.second.c_str());
+	if (pair.second.find("boolean") != std::string::npos) {
+		if ((pair.first.find("LogicalState") != std::string::npos)|| (pair.first.find("state") != std::string::npos)) {
+			json_object_set_string(json, "open", "false");
+			json_object_set_string(json, "close", "true");
+		}
+		else if ((pair.first.find("State") != std::string::npos) || (pair.first.find("Is") != std::string::npos)) {
+			json_object_set_string(json, "on", "true");
+			json_object_set_string(json, "off", "false");
+		}
+		else {
+			std::cout << pair.first << std::endl;
+		}
 	}
 	else if ((pair.first.find("Token") != std::string::npos) || (pair.second.find("Token") != std::string::npos)) {
-		std::string token = FindReferenceToken(pair.second, device);
-		json_object_set_string(json, "token2", token.c_str());
-
-		
-
-
+		if (pair.first.find("Source") != std::string::npos) {
+			json_object_set_string(json, "name", pair.first.c_str());
+		}
+		else {
+			std::string token = FindReferenceToken(pair);
+			json_object_set_string(json, "token", token.c_str());
+		}
 	}
 	else if (pair.second.find("string") != std::string::npos) {
 		json_object_set_string(json, "name", pair.first.c_str());
@@ -307,6 +347,8 @@ std::stringstream& GetData::returnStream()
 {
 	char *serialized_string = NULL;
 	serialized_string = json_serialize_to_string_pretty(root_value);
+	
+	removeChar(serialized_string, '\\');
 	stream << serialized_string;
 	json_free_serialized_string(serialized_string);
 	return stream;
@@ -321,3 +363,21 @@ JSON_Value * GetData::returnRoot()
 {
 	return root_value;
 }
+
+
+
+
+
+//RecordingBindingProxy record;
+//if (device->GCresp.Capabilities->Extension) {
+//	if (device->GCresp.Capabilities->Extension->Recording) {
+//		//record.soap_endpoint = device->GCresp.Capabilities->Extension->Recording->XAddr.c_str();
+//		record.soap_endpoint = device->deXaddr.c_str();
+//		_trc__GetServiceCapabilities gsc;
+//		_trc__GetServiceCapabilitiesResponse gscresp;
+
+//		record.GetServiceCapabilities(&gsc, gscresp);
+
+//		//std::cout << "DynamicRecordings: " << gscresp.Capabilities->DynamicRecordings << std::endl;
+//	}
+//}

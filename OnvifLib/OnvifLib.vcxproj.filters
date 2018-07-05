@@ -192,6 +192,12 @@
     <ClCompile Include="..\onvifgen\soapwsddService.cpp">
       <Filter>onvifgen</Filter>
     </ClCompile>
+    <ClCompile Include="..\gsoap\gsoap\runtime\plugin.c">
+      <Filter>gsoap\runtime</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gsoap\gsoap\runtime\logging.c">
+      <Filter>gsoap\runtime</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gsoap\gsoap\runtime\duration.h">
@@ -370,6 +376,12 @@
     </ClInclude>
     <ClInclude Include="..\onvifgen\soapwsddService.h">
       <Filter>onvifgen</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gsoap\gsoap\runtime\plugin.h">
+      <Filter>gsoap\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gsoap\gsoap\runtime\logging.h">
+      <Filter>gsoap\runtime</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

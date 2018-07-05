@@ -21,7 +21,9 @@
   <ItemGroup>
     <ClCompile Include="..\gsoap\gsoap\runtime\dom.cpp" />
     <ClCompile Include="..\gsoap\gsoap\runtime\duration.c" />
+    <ClCompile Include="..\gsoap\gsoap\runtime\logging.c" />
     <ClCompile Include="..\gsoap\gsoap\runtime\mecevp.c" />
+    <ClCompile Include="..\gsoap\gsoap\runtime\plugin.c" />
     <ClCompile Include="..\gsoap\gsoap\runtime\smdevp.c" />
     <ClCompile Include="..\gsoap\gsoap\runtime\stdsoap2.cpp" />
     <ClCompile Include="..\gsoap\gsoap\runtime\threads.c" />
@@ -82,7 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\gsoap\gsoap\runtime\duration.h" />
+    <ClInclude Include="..\gsoap\gsoap\runtime\logging.h" />
     <ClInclude Include="..\gsoap\gsoap\runtime\mecevp.h" />
+    <ClInclude Include="..\gsoap\gsoap\runtime\plugin.h" />
     <ClInclude Include="..\gsoap\gsoap\runtime\smdevp.h" />
     <ClInclude Include="..\gsoap\gsoap\runtime\stdsoap2.h" />
     <ClInclude Include="..\gsoap\gsoap\runtime\threads.h" />

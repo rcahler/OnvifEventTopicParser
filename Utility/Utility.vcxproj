@@ -21,9 +21,11 @@
   <ItemGroup>
     <ClCompile Include="..\3rdparty\parson\parson.c" />
     <ClCompile Include="..\include\device.cpp" />
+    <ClCompile Include="..\include\DeviceIO.cpp" />
     <ClCompile Include="..\include\event.cpp" />
     <ClCompile Include="..\include\ParseEventProperties.cpp" />
     <ClCompile Include="..\include\profiles.cpp" />
+    <ClCompile Include="..\include\removeChar.cpp" />
     <ClCompile Include="..\include\SaveToFile.cpp" />
     <ClCompile Include="..\include\split.cpp" />
     <ClCompile Include="..\include\ValidateCred.cpp" />
@@ -33,9 +35,11 @@
   <ItemGroup>
     <ClInclude Include="..\3rdparty\parson\parson.h" />
     <ClInclude Include="..\include\device.hpp" />
+    <ClInclude Include="..\include\DeviceIO.hpp" />
     <ClInclude Include="..\include\event.hpp" />
     <ClInclude Include="..\include\ParseEventProperties.h" />
     <ClInclude Include="..\include\profiles.hpp" />
+    <ClInclude Include="..\include\removeChar.h" />
     <ClInclude Include="..\include\SaveToFile.hpp" />
     <ClInclude Include="..\include\split.h" />
     <ClInclude Include="..\include\ValidateCred.hpp" />

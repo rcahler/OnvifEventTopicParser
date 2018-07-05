@@ -1760,7 +1760,8 @@ JSON_Status json_object_set_value(JSON_Object *object, const char *name, JSON_Va
 }
 
 JSON_Status json_object_set_string(JSON_Object *object, const char *name, const char *string) {
-    return json_object_set_value(object, name, json_value_init_string(string));
+	JSON_Value* value = json_value_init_string(string);
+    return json_object_set_value(object, name, value);
 }
 
 JSON_Status json_object_set_number(JSON_Object *object, const char *name, double number) {

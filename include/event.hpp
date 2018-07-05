@@ -1,21 +1,17 @@
 #include <string>
 #include "soapStub.h"
 #include "soapPullPointSubscriptionBindingProxy.h"
-#include "wsseapi.h"
 
 #ifndef _Event_
 #define _Event_
 
-struct EventData {
-	_tev__GetEventPropertiesResponse resp;
-};
-
 class Event {
 
 public: //Constructor
-	Event(std::string user, std::string pass, std::string url);
+	Event();
 public: //Functions
 	int GetEventProperties();
+	void SetParameters(std::string user, std::string pass, std::string url);
 private: //Variables
 	std::string m_username;
 	std::string m_password;
