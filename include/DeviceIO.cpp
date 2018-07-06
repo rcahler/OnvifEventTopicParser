@@ -10,6 +10,8 @@ void DeviceIO::SetParameters(std::string user, std::string pass, std::string url
 	m_url = url;
 
 	deviceIO.soap_endpoint = m_url.c_str();
+
+	SOAP_OK;
 }
 
 int DeviceIO::GetRelayOutputs()
@@ -18,8 +20,11 @@ int DeviceIO::GetRelayOutputs()
 	soap_wsse_add_UsernameTokenDigest(&deviceIO, "Id", m_username.c_str(), m_password.c_str());
 
 	_tds__GetRelayOutputs GRO;
-	int i = deviceIO.GetRelayOutputs(&GRO, GROresp);
-	return i;
+	int soap_call_result = deviceIO.GetRelayOutputs(&GRO, GROresp);
+
+	relay_outputs = GROresp.RelayOutputs;
+
+	return soap_call_result;
 }
 
 int DeviceIO::GetDigitalInputs()
@@ -28,6 +33,9 @@ int DeviceIO::GetDigitalInputs()
 	soap_wsse_add_UsernameTokenDigest(&deviceIO, "Id", m_username.c_str(), m_password.c_str());
 
 	_tmd__GetDigitalInputs GDI;
-	int i = deviceIO.GetDigitalInputs(&GDI, GDIresp);
-	return i;
+	int soap_call_result = deviceIO.GetDigitalInputs(&GDI, GDIresp);
+
+	digital_inputs = GDIresp.DigitalInputs;
+
+	return soap_call_result;
 }

@@ -141,6 +141,16 @@ int Device::GetRelayOutputs()
 	return result;
 }
 
+int Device::GetServiceCapabilities()
+{
+	soap_wsse_add_Security(&deviceBindProxy);
+	soap_wsse_add_UsernameTokenDigest(&deviceBindProxy, "Id", m_username.c_str(), m_password.c_str());
+
+	_tds__GetServiceCapabilities GSC;
+	int result = deviceBindProxy.GetServiceCapabilities(&GSC, GSCresp);
+	return result;
+}
+
 void Device::SetParameters(std::string user, std::string pass, std::string url)
 {
 	m_username = user;

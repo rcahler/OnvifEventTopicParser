@@ -14,6 +14,7 @@ public: //Functions
 	int GetDeviceInformation();
 	int GetCapabilities();
 	int GetRelayOutputs();
+	int GetServiceCapabilities();
 	void SetParameters(std::string user, std::string pass, std::string url);
 private: //Local functions
 	int LocalAddUsernameTokenDigest(struct soap *soapOff, double cam_pc_offset);
@@ -34,6 +35,7 @@ public://Xaddr
 	_tds__GetDeviceInformationResponse GDIresp;
 	_tds__GetCapabilitiesResponse GCresp;
 	_tds__GetRelayOutputsResponse GROresp;
+	_tds__GetServiceCapabilitiesResponse GSCresp;
 public://Variables from the camera that need to be passed
 	std::string Manufacturer;
 	std::string FirmwareVersion;

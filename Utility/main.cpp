@@ -26,8 +26,6 @@ int main(int argc, char* argv[]) {
 
 	GetData data(username, password, url);
 	DeviceIO deviceIO;
-
-	
 	deviceIO.SetParameters(username, password, data.io_url);
 		
 	if (deviceIO.GetRelayOutputs() != SOAP_OK) {
@@ -36,14 +34,13 @@ int main(int argc, char* argv[]) {
 	if (deviceIO.GetDigitalInputs() != SOAP_OK) {
 		std::cerr << "Fail GetDigitalInputs" << std::endl;
 	}
-
-	deviceIO.GROresp.RelayOutputs.size();
-	deviceIO.GDIresp.DigitalInputs.size();
 	
+	data.AddDeviceIO(deviceIO.digital_inputs, deviceIO.relay_outputs);
 
+	data.DataToJson();
 	std::string name = data.returnManu();
 
-	//Opens filestream with an existing file or creates new file
+	//Opens filestream with an existing file or creates nclew file
 	if (creds.fileBoo) {
 		SaveToFile(creds.fString, name, data.returnRoot());
 	}
