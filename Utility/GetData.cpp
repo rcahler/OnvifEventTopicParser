@@ -5,6 +5,7 @@
 #include "removeChar.h"
 #include "Topic.h"
 #include "parson.h"
+#include "Analytics.hpp"
 
 
 GetData::GetData(std::string user, std::string pass, std::string url) {
@@ -46,8 +47,37 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
 	}
 
+	
+	/*
 	if (profile.GetProfiles() != SOAP_OK) {
-		//std::cerr << "Profiles could not be gotten" << std::endl;
+		std::cerr << "Profiles could not be gotten" << std::endl;
+	}
+	*/
+	
+	if (device.GCresp.Capabilities->Analytics) {
+
+		Analytics analytics;
+		analytics.SetParameters(m_username, m_password, device.anXaddr);
+
+
+		if (device.GCresp.Capabilities->Analytics->AnalyticsModuleSupport) {
+			std::cout << "Supports Analytics Modules\n";
+			std::cout << profile.VideoAnalytics() << std::endl;
+			std::cout << profile.VideoSource() << std::endl;
+		}
+		else {
+			std::cout << "Does not support Analytics Modules\n";
+		}
+
+		if (device.GCresp.Capabilities->Analytics->RuleSupport) {
+			std::cout << "Supports Rules\n";
+		}
+		else {
+			std::cout << "Does not support Rules\n";
+		}
+	}
+	else {
+		std::cout << "No analytics" << std::endl;
 	}
 
 	Manufacturer = device.Manufacturer;
@@ -398,7 +428,7 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}
 	else {
-		std::cout << "DIFF" << std::endl;
+		//std::cout << "DIFF" << std::endl;
 		json_object_set_string(json, "name", pair.first.c_str());
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}

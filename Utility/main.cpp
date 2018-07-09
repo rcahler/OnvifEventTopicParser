@@ -33,10 +33,19 @@ int main(int argc, char* argv[]) {
 			std::cerr << "Fail GetRelayOutputs Device" << std::endl;
 		}
 	}
-	if (deviceIO.GetDigitalInputs() != SOAP_OK) {
-		std::cerr << "Fail GetDigitalInputs" << std::endl;
+	int result = deviceIO.GetDigitalInputs();
+
+	if (result == 200) {
+		std::cerr << "tds error" << std::endl;
 	}
-	
+	else if (result != SOAP_OK) {
+		std::cerr << "Fail GetDigitalInputs" << std::endl;
+		std::cout << deviceIO.GetDigitalInputs() << std::endl;
+	}
+	else {
+		std::cout << "Sucsess DigitalInputs\n";
+	}
+
 	data.AddDeviceIO(deviceIO.digital_inputs, deviceIO.relay_outputs);
 
 	data.DataToJson();
