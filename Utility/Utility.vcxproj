@@ -46,7 +46,6 @@
     <ClInclude Include="..\include\split.h" />
     <ClInclude Include="..\include\ValidateCred.hpp" />
     <ClInclude Include="GetData.hpp" />
-    <ClInclude Include="main.h" />
     <ClInclude Include="Topic.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -69,9 +69,6 @@
     <ClInclude Include="..\3rdparty\parson\parson.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GetData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

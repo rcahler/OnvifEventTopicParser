@@ -125,8 +125,6 @@ int Device::GetCapabilities()
 		ioXaddr = m_url;
 	}
 
-	//std::cout << *GCresp.Capabilities->Device->IO->InputConnectors << "\n";
-
 	return result;
 }
 

@@ -36,7 +36,6 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 
 	event_url = device.evXaddr;
 	media_url = device.meXaddr;
-	std::cout << media_url << std::endl;
 
 	io_url = device.ioXaddr;
 
@@ -48,7 +47,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	}
 
 	if (profile.GetProfiles() != SOAP_OK) {
-		std::cerr << "Profiles could not be gotten" << std::endl;
+		//std::cerr << "Profiles could not be gotten" << std::endl;
 	}
 
 	Manufacturer = device.Manufacturer;
@@ -292,7 +291,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		std::cout << "digital_inputs: " << digital_inputs.size() << std::endl;
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
-		std::cout << "HERE1" << std::endl;
+		std::cout << "RelayToken" << std::endl;
 	}
 	else if (pair.second.find("ReferenceToken") != std::string::npos) {
 		

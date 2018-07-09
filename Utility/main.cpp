@@ -3,7 +3,6 @@
 #include "soapStub.h"
 #include "ValidateCred.hpp"
 #include "GetData.hpp"
-#include "main.h"
 #include "SaveToFile.hpp"
 #include "device.hpp"
 #include "DeviceIO.hpp"
@@ -43,8 +42,7 @@ int main(int argc, char* argv[]) {
 	data.DataToJson();
 	std::string name = data.returnManu();
 
-	//Opens filestream with an existing file or creates nclew file
-	if (creds.fileBoo) {
+	if (creds.fileBoo) {//Opens filestream with an existing file or creates new file
 		SaveToFile(creds.fString, name, data.returnRoot());
 	}
 	else {
