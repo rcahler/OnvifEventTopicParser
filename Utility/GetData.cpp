@@ -36,6 +36,8 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 
 	event_url = device.evXaddr;
 	media_url = device.meXaddr;
+	std::cout << media_url << std::endl;
+
 	io_url = device.ioXaddr;
 
 	profile.SetParameters(m_username, m_password, media_url);
@@ -43,10 +45,11 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 
 	if (event.GetEventProperties() != SOAP_OK) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
-		return;
 	}
 
-	if (profile.GetProfiles() != SOAP_OK)
+	if (profile.GetProfiles() != SOAP_OK) {
+		std::cerr << "Profiles could not be gotten" << std::endl;
+	}
 
 	Manufacturer = device.Manufacturer;
 	std::string FirmwareVersion = device.FirmwareVersion;

@@ -28,8 +28,6 @@ void Profiles::SetParameters(std::string user, std::string pass, std::string url
 	m_password = pass;
 	m_url = url;
 	media.soap_endpoint = m_url.c_str();
-	media.userid = m_username.c_str();
-	media.passwd = m_password.c_str();
 }
 
 void Profiles::VideoSource()

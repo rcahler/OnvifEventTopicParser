@@ -157,8 +157,6 @@ void Device::SetParameters(std::string user, std::string pass, std::string url)
 	m_password = pass;
 	m_url = url;
 	deviceBindProxy.soap_endpoint = m_url.c_str();
-	deviceBindProxy.userid = m_username.c_str();
-	deviceBindProxy.passwd = m_password.c_str();
 }
 
 int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)

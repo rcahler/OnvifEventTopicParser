@@ -7,9 +7,9 @@ int Event::GetEventProperties()
 	soap_wsse_add_Security(&PullPoint);
 	soap_wsse_add_UsernameTokenDigest(&PullPoint, "Id", m_username.c_str(), m_password.c_str());
 
-	//_tev__CreatePullPointSubscription CPPS;
-	//_tev__CreatePullPointSubscriptionResponse CPPSresp;
-	//PullPoint.CreatePullPointSubscription(&CPPS, CPPSresp);
+	_tev__CreatePullPointSubscription CPPS;
+	_tev__CreatePullPointSubscriptionResponse CPPSresp;
+	PullPoint.CreatePullPointSubscription(&CPPS, CPPSresp);
 
 	soap_wsse_add_Security(&PullPoint);
 	soap_wsse_add_UsernameTokenDigest(&PullPoint, "Id", m_username.c_str(), m_password.c_str());

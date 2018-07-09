@@ -10,8 +10,6 @@ void DeviceIO::SetParameters(std::string user, std::string pass, std::string url
 	m_url = url;
 
 	deviceIO.soap_endpoint = m_url.c_str();
-
-	SOAP_OK;
 }
 
 int DeviceIO::GetRelayOutputs()

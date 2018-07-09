@@ -29,7 +29,10 @@ int main(int argc, char* argv[]) {
 	deviceIO.SetParameters(username, password, data.io_url);
 		
 	if (deviceIO.GetRelayOutputs() != SOAP_OK) {
-		std::cerr << "Fail GetRelayOutputs" << std::endl;
+		std::cerr << "Fail GetRelayOutputs DeviceIO" << std::endl;
+		if (data.device.GetRelayOutputs() != SOAP_OK) {
+			std::cerr << "Fail GetRelayOutputs Device" << std::endl;
+		}
 	}
 	if (deviceIO.GetDigitalInputs() != SOAP_OK) {
 		std::cerr << "Fail GetDigitalInputs" << std::endl;
