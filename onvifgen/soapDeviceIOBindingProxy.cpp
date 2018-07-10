@@ -46,7 +46,7 @@ DeviceIOBindingProxy::DeviceIOBindingProxy(soap_mode imode, soap_mode omode) : s
 DeviceIOBindingProxy::~DeviceIOBindingProxy()
 {
 	this->destroy();
-	}
+}
 
 void DeviceIOBindingProxy::DeviceIOBindingProxy_init(soap_mode imode, soap_mode omode)
 {	soap_imode(this, imode);

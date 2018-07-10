@@ -24,6 +24,7 @@
     <ClCompile Include="..\include\device.cpp" />
     <ClCompile Include="..\include\DeviceIO.cpp" />
     <ClCompile Include="..\include\event.cpp" />
+    <ClCompile Include="..\include\ParseDigitalInputsXML.cpp" />
     <ClCompile Include="..\include\ParseEventProperties.cpp" />
     <ClCompile Include="..\include\profiles.cpp" />
     <ClCompile Include="..\include\removeChar.cpp" />
@@ -39,6 +40,7 @@
     <ClInclude Include="..\include\device.hpp" />
     <ClInclude Include="..\include\DeviceIO.hpp" />
     <ClInclude Include="..\include\event.hpp" />
+    <ClInclude Include="..\include\ParseDigitalInputsXML.hpp" />
     <ClInclude Include="..\include\ParseEventProperties.h" />
     <ClInclude Include="..\include\profiles.hpp" />
     <ClInclude Include="..\include\removeChar.h" />
@@ -124,7 +126,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VCInstallDir)UnitTest\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64; $(VCInstallDir)UnitTest\lib;$(LibraryPath);$(VCInstallDir)UnitTest\lib;$(LibraryPath)</LibraryPath>
-    <CodeAnalysisRuleSet>NativeMinimumRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

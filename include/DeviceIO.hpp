@@ -15,9 +15,9 @@ private:
 	std::string m_password;
 	std::string m_url;
 	DeviceIOBindingProxy deviceIO;
-	_tmd__GetDigitalInputsResponse GDIresp;
 	_tds__GetRelayOutputsResponse GROresp;
 public:
 	std::vector<tt__DigitalInput*> digital_inputs;
+	_tmd__GetDigitalInputsResponse GDIresp;
 	std::vector<tt__RelayOutput*> relay_outputs;
 };

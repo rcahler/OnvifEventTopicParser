@@ -45,29 +45,32 @@ std::string Profiles::VideoAnalytics()
 
 	std::vector<tt__Profile*> profiles = GPSresp.Profiles;
 
+	bool GCVACbool = false;
+
 	for (size_t i = 0; i < profiles.size(); i++) {
-		if (*profiles[i]->MetadataConfiguration->Analytics) {
+		if (profiles[i]->MetadataConfiguration) {
 			_trt__GetCompatibleVideoAnalyticsConfigurations GCVACS;
 			GCVACS.ProfileToken = profiles[i]->token;
 			_trt__GetCompatibleVideoAnalyticsConfigurationsResponse GCVACSresp;
 			soap_wsse_add_Security(&media);
 			soap_wsse_add_UsernameTokenDigest(&media, "Id", m_username.c_str(), m_password.c_str());
 
-			if (media.GetCompatibleVideoAnalyticsConfigurations(&GCVACS, GCVACSresp) != SOAP_OK) {
+			if (media.GetCompatibleVideoAnalyticsConfigurations(&GCVACS, GCVACSresp) == SOAP_OK) {
 				//std::cerr << "VideoAnalyticsConfigurations could not be gotten" << std::endl;
-				std::cerr << "FAIL" << std::endl;
-			}
-			else {
-				std::cout << "GetCompatibleVideoAnalyticsConfigurations suceed" << std::endl;
+				GCVACbool = true;
 			}
 		}
-		else {
-			std::cout << "Profile does not support analytics\n";
-		}
+	}
+
+	if (GCVACbool == true) {
+		return "Atleast one profile supports GetCompatibleVideoAnalyticsConfigurations\n";
+	}
+	else {
+		return "No profiles support GetCompatibleVideoAnalyticsConfigurations\n";
 	}
 
 	
 
-	return "VideoAnalytics";
+	
 	//return GPresp.Profile->VideoAnalyticsConfiguration->token;
 }

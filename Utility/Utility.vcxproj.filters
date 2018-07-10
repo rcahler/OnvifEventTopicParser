@@ -49,6 +49,9 @@
     <ClCompile Include="..\include\Analytics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\ParseDigitalInputsXML.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\ParseEventProperties.h">
@@ -88,6 +91,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Analytics.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\ParseDigitalInputsXML.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -47,7 +47,6 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
 	}
 
-	
 	/*
 	if (profile.GetProfiles() != SOAP_OK) {
 		std::cerr << "Profiles could not be gotten" << std::endl;
@@ -69,12 +68,15 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 			std::cout << "Does not support Analytics Modules\n";
 		}
 
+		/*
 		if (device.GCresp.Capabilities->Analytics->RuleSupport) {
 			std::cout << "Supports Rules\n";
 		}
 		else {
 			std::cout << "Does not support Rules\n";
 		}
+		*/
+		
 	}
 	else {
 		std::cout << "No analytics" << std::endl;
@@ -318,10 +320,31 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		if (!digital_inputs.size()) {
 			std::cout << "no digital_inputs" << std::endl;
 		}
-		std::cout << "digital_inputs: " << digital_inputs.size() << std::endl;
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
-		std::cout << "RelayToken" << std::endl;
+		if (!relay_outputs.size()) {
+			std::cerr << "no relay_outputs" << std::endl;
+		}
+		std::vector<char*> strings;
+		for (size_t i = 0; i < relay_outputs.size(); ++i) {
+			JSON_Value* value = json_value_init_object();
+			JSON_Object* object = json_value_get_object(value);
+			json_object_set_string(object, "name", pair.first.c_str());
+			json_object_set_string(object, "value", relay_outputs[i]->token.c_str());
+			strings.push_back(json_serialize_to_string(value));
+		}
+		std::string roString;
+		for (size_t i = 0; i < strings.size(); ++i) {
+			if (i == strings.size() - 1) {
+				roString += std::string(strings[i]);
+			}
+			else {
+				roString += std::string(strings[i]) + ",";
+			}
+		}
+		roString = '[' + roString + ']';
+
+		return roString;
 	}
 	else if (pair.second.find("ReferenceToken") != std::string::npos) {
 		
@@ -428,7 +451,6 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}
 	else {
-		//std::cout << "DIFF" << std::endl;
 		json_object_set_string(json, "name", pair.first.c_str());
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}
