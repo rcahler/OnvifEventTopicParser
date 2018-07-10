@@ -17,7 +17,7 @@ private:
 	DeviceIOBindingProxy deviceIO;
 	_tds__GetRelayOutputsResponse GROresp;
 public:
-	std::vector<tt__DigitalInput*> digital_inputs;
+	std::vector<tt__DigitalInput*> digital_inputs_soap;
 	_tmd__GetDigitalInputsResponse GDIresp;
 	std::vector<tt__RelayOutput*> relay_outputs;
 };

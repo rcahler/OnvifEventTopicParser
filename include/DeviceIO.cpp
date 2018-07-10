@@ -33,7 +33,7 @@ int DeviceIO::GetDigitalInputs()
 	_tmd__GetDigitalInputs GDI;
 	int soap_call_result = deviceIO.GetDigitalInputs(&GDI, GDIresp);
 
-	digital_inputs = GDIresp.DigitalInputs;
+	digital_inputs_soap = GDIresp.DigitalInputs;
 
 	return soap_call_result;
 }

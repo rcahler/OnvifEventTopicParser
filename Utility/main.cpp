@@ -8,6 +8,7 @@
 #include "DeviceIO.hpp"
 #include "logging.h"
 #include <cstdio>
+#include "ParseDigitalInputsXML.hpp"
 
 int main(int argc, char* argv[]) {
 
@@ -43,6 +44,7 @@ int main(int argc, char* argv[]) {
 
 	
 	int result = deviceIO.GetDigitalInputs();
+	std::vector<std::string> DigitalInputs;
 	if (result == 200) {
 		
 		FILE* tFile;
@@ -74,20 +76,23 @@ int main(int argc, char* argv[]) {
 		contents[file_size] = 0;
 		fclose(tFile);
 
-		//Need to parse contents
-		std::cout << contents << std::endl;
+		DigitalInputs = ParseDigitalInputsXML(contents);
+		free(contents);
 
-		//std::cout << bytes_in << std::endl;
-		//std::cout << bytes_out << std::endl;
+	
 	}
-	else if (result != SOAP_OK) {
-		std::cerr << "Fail GetDigitalInputs: " << deviceIO.GetDigitalInputs() << std::endl;
+	else if (result == SOAP_OK) {
+		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
 	}
+
+	if (DigitalInputs.size()) {
+		data.AddDeviceIO(DigitalInputs, relay_outputs);
+	}/*
 	else {
-		std::cout << "Sucsess DigitalInputs\n";
-	}
+		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
+	}*/
 
-	data.AddDeviceIO(deviceIO.digital_inputs, relay_outputs);
+	
 
 	data.DataToJson();
 	std::string name = data.returnManu();

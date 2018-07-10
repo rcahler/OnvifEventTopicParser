@@ -20,6 +20,7 @@ private://Internal functions
 public:
 	void DataToJson();
 	void AddDeviceIO(std::vector<tt__DigitalInput*>, std::vector<tt__RelayOutput*>);
+	void AddDeviceIO(std::vector<std::string>, std::vector<tt__RelayOutput*>);
 	std::stringstream& returnStream();
 	std::string returnManu();
 	JSON_Value* returnRoot();
@@ -36,7 +37,10 @@ private:
 	JSON_Value * root_value;
 	Profiles profile;
 	Event event;
-	std::vector<tt__DigitalInput*> digital_inputs;
+	std::vector<tt__DigitalInput*> digital_inputs_soap;
+	bool diSoap = false;
+	std::vector<std::string> digital_inputs_string;
+	bool diString = false;
 	std::vector<tt__RelayOutput*> relay_outputs;
 public:
 	std::string io_url;

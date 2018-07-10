@@ -60,12 +60,12 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 
 
 		if (device.GCresp.Capabilities->Analytics->AnalyticsModuleSupport) {
-			std::cout << "Supports Analytics Modules\n";
-			std::cout << profile.VideoAnalytics() << std::endl;
-			std::cout << profile.VideoSource() << std::endl;
+			//std::cout << "Supports Analytics Modules\n";
+			//std::cout << profile.VideoAnalytics() << std::endl;
+			//std::cout << profile.VideoSource() << std::endl;
 		}
 		else {
-			std::cout << "Does not support Analytics Modules\n";
+			//std::cout << "Does not support Analytics Modules\n";
 		}
 
 		/*
@@ -79,7 +79,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		
 	}
 	else {
-		std::cout << "No analytics" << std::endl;
+		//std::cout << "No analytics" << std::endl;
 	}
 
 	Manufacturer = device.Manufacturer;
@@ -105,13 +105,13 @@ void GetData::DataToJson()
 		std::vector<std::pair<std::string, std::string>> elements = topics[i].elements;
 		std::string name = topics[i].name;
 		if (elements.size() == 2) {
-			ToJsonTopicTwoElements(name, elements);
+			//ToJsonTopicTwoElements(name, elements);
 		}
 		else if (elements.size() > 2) {
 			ToJsonTopicMoreElements(name, elements);
 		}
 		else if (elements.size() == 1) {
-			ToJsonTopicLessElements(name, elements);
+			//ToJsonTopicLessElements(name, elements);
 		}
 		else {
 			std::cerr << "ERROR" << std::endl;
@@ -157,7 +157,14 @@ void GetData::DataToJson()
 
 void GetData::AddDeviceIO(std::vector<tt__DigitalInput*> di, std::vector<tt__RelayOutput*> ro)
 {
-	digital_inputs = di;
+	digital_inputs_soap = di;
+	diSoap = true;
+	relay_outputs = ro;
+}
+
+void GetData::AddDeviceIO(std::vector<std::string> di, std::vector<tt__RelayOutput*> ro) {
+	digital_inputs_string = di;
+	diString = true;
 	relay_outputs = ro;
 }
 
@@ -213,7 +220,7 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 	JSON_Object *data_object = json_value_get_object(data_value);
 
 	json_object_set_string(source_object, "name", elements[0].first.c_str());
-	//FIX
+	
 	source_value = DealWithTypes(elements[0]);
 	elements.erase(elements.begin());
 
@@ -221,12 +228,20 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 		elements.erase(elements.begin());
 	}
 
+	//std::cout << elements.size() << std::endl;
+	//std::cout << elements[0].first << " " << elements[0].second << std::endl;
+
 	if ((elements[0].second.find("string") != std::string::npos) && (elements.size() > 1)) {
 		elements.erase(elements.begin());
 		json_object_set_string(data_object, "name", elements[0].first.c_str());
 		//FIX
 		data_value = DealWithTypes(elements[0]);
 	}
+	else {
+		std::cout << "HERE" << std::endl;
+	}
+
+	std::cout << "" << std::endl;
 
 
 	json_object_set_value(topic_object, "source", source_value);
@@ -281,7 +296,7 @@ void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<st
 		}
 	}
 	else {
-		std::cout << "Neither motion or input trigger: " << name << std::endl;
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 	return;
 }
@@ -317,8 +332,40 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 	if (pair.second.find("AlarmInToken") != std::string::npos) {
 	}
 	else if (pair.second.find("InputToken") != std::string::npos) {
-		if (!digital_inputs.size()) {
-			std::cout << "no digital_inputs" << std::endl;
+		if ((diSoap) || (diString)) {
+			std::vector<char*> strings;
+			if (diSoap) {
+				for (size_t i = 0; i < digital_inputs_soap.size(); ++i) {
+					JSON_Value* value = json_value_init_object();
+					JSON_Object* object = json_value_get_object(value);
+					json_object_set_string(object, "name", pair.first.c_str());
+					json_object_set_string(object, "value", digital_inputs_soap[i]->token.c_str());
+					strings.push_back(json_serialize_to_string(value));
+				}
+			}
+
+			if (diString) {
+				for (size_t i = 0; i < digital_inputs_string.size(); ++i) {
+					JSON_Value* value = json_value_init_object();
+					JSON_Object* object = json_value_get_object(value);
+					json_object_set_string(object, "name", pair.first.c_str());
+					json_object_set_string(object, "value", digital_inputs_string[i].c_str());
+					strings.push_back(json_serialize_to_string(value));
+				}
+			}
+
+			std::string diString;
+			for (size_t i = 0; i < strings.size(); ++i) {
+				if (i == strings.size() - 1) {
+					diString += std::string(strings[i]);
+				}
+				else {
+					diString += std::string(strings[i]) + ",";
+				}
+			}
+			diString = '[' + diString + ']';
+
+			return diString;
 		}
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
@@ -349,33 +396,43 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 	else if (pair.second.find("ReferenceToken") != std::string::npos) {
 		
 		if (pair.first.find("VideoSource") != std::string::npos) {
-
+			std::cout << pair.first << " " << pair.second << std::endl;
 		} else if (pair.first.find("Input") != std::string::npos) {
-			if (!digital_inputs.size()) {
-				std::cerr << "no digital_inputs" << std::endl;
-			}
-
-			std::vector<char*> strings;
-			for (size_t i = 0; i < digital_inputs.size(); ++i) {
-				JSON_Value* value = json_value_init_object();
-				JSON_Object* object = json_value_get_object(value);
-				json_object_set_string(object, "name", pair.first.c_str());
-				json_object_set_string(object, "value", digital_inputs[i]->token.c_str());
-				strings.push_back(json_serialize_to_string(value));
-			}
-			std::string diString;
-			for (size_t i = 0; i < strings.size(); ++i) {
-				if (i == strings.size() - 1) {
-					diString += std::string(strings[i]);
+			if ((diSoap)||(diString)) {
+				std::vector<char*> strings;
+				if (diSoap) {
+					for (size_t i = 0; i < digital_inputs_soap.size(); ++i) {
+						JSON_Value* value = json_value_init_object();
+						JSON_Object* object = json_value_get_object(value);
+						json_object_set_string(object, "name", pair.first.c_str());
+						json_object_set_string(object, "value", digital_inputs_soap[i]->token.c_str());
+						strings.push_back(json_serialize_to_string(value));
+					}
 				}
-				else {
-					diString += std::string(strings[i]) + ",";
+
+				if (diString) {
+					for (size_t i = 0; i < digital_inputs_string.size(); ++i) {
+						JSON_Value* value = json_value_init_object();
+						JSON_Object* object = json_value_get_object(value);
+						json_object_set_string(object, "name", pair.first.c_str());
+						json_object_set_string(object, "value", digital_inputs_string[i].c_str());
+						strings.push_back(json_serialize_to_string(value));
+					}
 				}
+				
+				std::string diString;
+				for (size_t i = 0; i < strings.size(); ++i) {
+					if (i == strings.size() - 1) {
+						diString += std::string(strings[i]);
+					}
+					else {
+						diString += std::string(strings[i]) + ",";
+					}
+				}
+				diString = '[' + diString + ']';
+
+				return diString;
 			}
-			diString = '[' + diString + ']';
-
-			return diString;
-
 		}
 		else if (pair.first.find("Relay") != std::string::npos) {
 			if (!relay_outputs.size()) {
@@ -403,13 +460,15 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 			return roString;
 		}
 		else {
+			std::cout << "HERE" << std::endl;
+			std::cout << pair.first << " " << pair.second << std::endl;
 		}
 	}
 	else {
 		std::cerr << "Unrecognized token: " << pair.second << std::endl;
 	}
 
-	token = pair.second;
+	token = "IN PROGRESS";
 
 	return token;
 }
