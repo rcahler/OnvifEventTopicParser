@@ -2,7 +2,7 @@
 #include <iostream>
 #include "split.h"
 
-std::vector<std::string> ParseDigitalInputsXML(char * string)
+std::vector<std::string> ParseDigitalInputsXML(char* string)
 {
 	std::string xml = std::string(string);
 	xml.find("<tds:GetDigitalInputsResponse>");

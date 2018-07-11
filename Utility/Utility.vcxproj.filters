@@ -46,10 +46,10 @@
     <ClCompile Include="..\include\removeChar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\Analytics.cpp">
+    <ClCompile Include="..\include\ParseDigitalInputsXML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\ParseDigitalInputsXML.cpp">
+    <ClCompile Include="..\include\analytics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -90,10 +90,10 @@
     <ClInclude Include="..\include\removeChar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\Analytics.hpp">
+    <ClInclude Include="..\include\ParseDigitalInputsXML.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\ParseDigitalInputsXML.hpp">
+    <ClInclude Include="..\include\analytics.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

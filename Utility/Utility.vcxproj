@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\3rdparty\parson\parson.c" />
-    <ClCompile Include="..\include\Analytics.cpp" />
+    <ClCompile Include="..\include\analytics.cpp" />
     <ClCompile Include="..\include\device.cpp" />
     <ClCompile Include="..\include\DeviceIO.cpp" />
     <ClCompile Include="..\include\event.cpp" />
@@ -36,7 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\3rdparty\parson\parson.h" />
-    <ClInclude Include="..\include\Analytics.hpp" />
+    <ClInclude Include="..\include\analytics.hpp" />
     <ClInclude Include="..\include\device.hpp" />
     <ClInclude Include="..\include\DeviceIO.hpp" />
     <ClInclude Include="..\include\event.hpp" />

@@ -31,28 +31,33 @@ int main(int argc, char* argv[]) {
 
 
 	std::vector<tt__RelayOutput*> relay_outputs;
-	if (deviceIO.GetRelayOutputs() == SOAP_OK) {
+	
+	int deviceio_relay_result = deviceIO.GetRelayOutputs();
+	if (deviceio_relay_result == SOAP_OK) {
+		
 		if (deviceIO.relay_outputs.size() > 0) {
 			relay_outputs = deviceIO.relay_outputs;
 		}
 	}
-	if (data.device.GetRelayOutputs() == SOAP_OK) {
+
+	int device_relay_result = data.device.GetRelayOutputs();
+	if (device_relay_result == SOAP_OK) {
 		if (data.device.GROresp.RelayOutputs.size() > 0) {
 			relay_outputs = data.device.GROresp.RelayOutputs;
 		}
 	}
 
+	std::cout << relay_outputs.size() << std::endl;
+	//std::cout << &relay_outputs[0] << std::endl;
+
 	
-	int result = deviceIO.GetDigitalInputs();
+	int digital_inputs_result = deviceIO.GetDigitalInputs();
+	std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;
 	std::vector<std::string> DigitalInputs;
-	if (result == 200) {
+	if (digital_inputs_result == 200) {
 		
 		FILE* tFile;
 		tFile = tmpfile();
-		
-		size_t bytes_in;
-		size_t bytes_out;
-
 		
 		if (soap_register_plugin(deviceIO.GDIresp.soap, logging)) {
 			soap_print_fault(deviceIO.GDIresp.soap, stderr); // failed to register
@@ -63,7 +68,6 @@ int main(int argc, char* argv[]) {
 		deviceIO.GetDigitalInputs();
 
 		soap_set_logging_inbound(deviceIO.GDIresp.soap, NULL); // disable logging
-		soap_get_logging_stats(deviceIO.GDIresp.soap, &bytes_out, &bytes_in);
 		
 		char *contents;
 		long file_size;
@@ -81,16 +85,16 @@ int main(int argc, char* argv[]) {
 
 	
 	}
-	else if (result == SOAP_OK) {
+	else if (digital_inputs_result == SOAP_OK) {
 		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
+	}
+	else {
+		
 	}
 
 	if (DigitalInputs.size()) {
 		data.AddDeviceIO(DigitalInputs, relay_outputs);
-	}/*
-	else {
-		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
-	}*/
+	}
 
 	
 

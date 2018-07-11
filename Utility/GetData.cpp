@@ -47,41 +47,6 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
 	}
 
-	/*
-	if (profile.GetProfiles() != SOAP_OK) {
-		std::cerr << "Profiles could not be gotten" << std::endl;
-	}
-	*/
-	
-	if (device.GCresp.Capabilities->Analytics) {
-
-		Analytics analytics;
-		analytics.SetParameters(m_username, m_password, device.anXaddr);
-
-
-		if (device.GCresp.Capabilities->Analytics->AnalyticsModuleSupport) {
-			//std::cout << "Supports Analytics Modules\n";
-			//std::cout << profile.VideoAnalytics() << std::endl;
-			//std::cout << profile.VideoSource() << std::endl;
-		}
-		else {
-			//std::cout << "Does not support Analytics Modules\n";
-		}
-
-		/*
-		if (device.GCresp.Capabilities->Analytics->RuleSupport) {
-			std::cout << "Supports Rules\n";
-		}
-		else {
-			std::cout << "Does not support Rules\n";
-		}
-		*/
-		
-	}
-	else {
-		//std::cout << "No analytics" << std::endl;
-	}
-
 	Manufacturer = device.Manufacturer;
 	std::string FirmwareVersion = device.FirmwareVersion;
 	std::string HardwareId = device.HardwareId;
@@ -105,13 +70,13 @@ void GetData::DataToJson()
 		std::vector<std::pair<std::string, std::string>> elements = topics[i].elements;
 		std::string name = topics[i].name;
 		if (elements.size() == 2) {
-			//ToJsonTopicTwoElements(name, elements);
+			ToJsonTopicTwoElements(name, elements);
 		}
 		else if (elements.size() > 2) {
 			ToJsonTopicMoreElements(name, elements);
 		}
 		else if (elements.size() == 1) {
-			//ToJsonTopicLessElements(name, elements);
+			ToJsonTopicLessElements(name, elements);
 		}
 		else {
 			std::cerr << "ERROR" << std::endl;
@@ -178,6 +143,12 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	removeChar(c_name, '\\');
 	json_object_set_string(topic_object, "name", c_name);
 
+	/*
+	for (size_t i = 0; i < elements.size(); i++) {
+		std::cout << elements[i].first << " " << elements[i].second << std::endl;
+	}
+	*/
+
 	JSON_Value *source_value = json_value_init_object();
 	JSON_Object *source_object = json_value_get_object(source_value);
 	JSON_Value *data_value = json_value_init_object();
@@ -200,7 +171,7 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		std::cout << "Neither motion or input trigger: " << name << std::endl;
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 	return;
 }
@@ -224,24 +195,38 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 	source_value = DealWithTypes(elements[0]);
 	elements.erase(elements.begin());
 
-	if (elements[0].first.find("Analytics") != std::string::npos) {
+	if ((elements[0].second.find("tt:ReferenceToken") != std::string::npos)|| (elements[0].first.find("Token") != std::string::npos)) {
 		elements.erase(elements.begin());
 	}
 
-	//std::cout << elements.size() << std::endl;
-	//std::cout << elements[0].first << " " << elements[0].second << std::endl;
-
-	if ((elements[0].second.find("string") != std::string::npos) && (elements.size() > 1)) {
+	if (elements[0].first.find("Rule") != std::string::npos) {
 		elements.erase(elements.begin());
+	}
+
+	if (elements.size() == 1) {
 		json_object_set_string(data_object, "name", elements[0].first.c_str());
-		//FIX
 		data_value = DealWithTypes(elements[0]);
 	}
 	else {
-		std::cout << "HERE" << std::endl;
-	}
+		if (elements.size() != 2) {
+			std::cerr << "Issue with the number of topic elements\n";
+		}
 
-	std::cout << "" << std::endl;
+		if ((elements[1].second.find("string") != std::string::npos)|| (elements[1].second.find("boolean") != std::string::npos)) {
+			json_object_set_string(data_object, "name", elements[1].first.c_str());
+			data_value = DealWithTypes(elements[1]);
+		}
+		else if ((elements[0].second.find("string") != std::string::npos) || (elements[0].second.find("boolean") != std::string::npos)) {
+			json_object_set_string(data_object, "name", elements[0].first.c_str());
+			data_value = DealWithTypes(elements[0]);
+		}
+		else { //Unusual datatype
+			json_object_set_string(data_object, "name", elements[0].first.c_str());
+			data_value = DealWithTypes(elements[0]);
+			//json_object_set_string(data_object, "name", elements[1].first.c_str());
+			//data_value = DealWithTypes(elements[1]);
+		}
+	}
 
 
 	json_object_set_value(topic_object, "source", source_value);
@@ -254,7 +239,7 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		std::cout << "Neither motion or input trigger: " << name << std::endl;
+		//std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 
 	return;
@@ -396,7 +381,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 	else if (pair.second.find("ReferenceToken") != std::string::npos) {
 		
 		if (pair.first.find("VideoSource") != std::string::npos) {
-			std::cout << pair.first << " " << pair.second << std::endl;
+			//std::cout << pair.first << " " << pair.second << std::endl;
 		} else if (pair.first.find("Input") != std::string::npos) {
 			if ((diSoap)||(diString)) {
 				std::vector<char*> strings;
@@ -436,7 +421,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		}
 		else if (pair.first.find("Relay") != std::string::npos) {
 			if (!relay_outputs.size()) {
-				std::cerr << "no relay_outputs" << std::endl;
+				//std::cerr << "no relay_outputs" << std::endl;
 			}
 			std::vector<char*> strings;
 			for (size_t i = 0; i < relay_outputs.size(); ++i) {
@@ -460,21 +445,25 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 			return roString;
 		}
 		else {
-			std::cout << "HERE" << std::endl;
-			std::cout << pair.first << " " << pair.second << std::endl;
+			//std::cout << pair.first << " " << pair.second << std::endl;
 		}
 	}
 	else {
-		std::cerr << "Unrecognized token: " << pair.second << std::endl;
+		//std::cerr << "Unrecognized token: " << pair.second << std::endl;
 	}
 
 	token = "IN PROGRESS";
+
+	std::cout << "IN PROGRESS\n" << pair.first << " " << pair.second << std::endl;
+
 
 	return token;
 }
 
 JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 {
+	//std::cout << "HERE" << std::endl;
+
 	JSON_Value* value = json_value_init_object();
 	JSON_Object* json = json_value_get_object(value);
 
@@ -505,11 +494,16 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 		}
 	}
 	else if (pair.second.find("int") != std::string::npos) {
-		std::cout << "INT" << std::endl;
 		json_object_set_string(json, "name", pair.first.c_str());
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}
+	else if (pair.second.find("RelayLogicalState") != std::string::npos) {
+		json_object_set_string(json, "name", pair.first.c_str());
+		json_object_set_string(json, "open", "false");
+		json_object_set_string(json, "close", "true");
+	}
 	else {
+		std::cout << "Unknown datatype " << pair.second.c_str() << std::endl;
 		json_object_set_string(json, "name", pair.first.c_str());
 		json_object_set_string(json, "datatype", pair.second.c_str());
 	}
