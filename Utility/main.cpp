@@ -46,10 +46,6 @@ int main(int argc, char* argv[]) {
 			relay_outputs = data.device.GROresp.RelayOutputs;
 		}
 	}
-
-	std::cout << relay_outputs.size() << std::endl;
-	//std::cout << &relay_outputs[0] << std::endl;
-
 	
 	int digital_inputs_result = deviceIO.GetDigitalInputs();
 	std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;

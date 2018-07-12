@@ -104,6 +104,7 @@ void GetData::DataToJson()
 		json_object_dotset_value(root_object, "motion.topic", json_parse_string(mString.c_str()));
 	}
 
+
 	//Adds all input trigger topics to the Json
 	if (inputV.size()) {
 		std::string iString;
@@ -145,7 +146,8 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 
 	/*
 	for (size_t i = 0; i < elements.size(); i++) {
-		std::cout << elements[i].first << " " << elements[i].second << std::endl;
+		
+		<< elements[i].first << " " << elements[i].second << std::endl;
 	}
 	*/
 
@@ -454,7 +456,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 
 	token = "IN PROGRESS";
 
-	std::cout << "IN PROGRESS\n" << pair.first << " " << pair.second << std::endl;
+	//std::cout << "IN PROGRESS\n" << pair.first << " " << pair.second << std::endl;
 
 
 	return token;

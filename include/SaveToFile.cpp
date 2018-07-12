@@ -50,42 +50,107 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	JSON_Value* onvif_value = json_object_get_value(object, "onvifnvc");
 	JSON_Object* onvif_object = json_value_get_object(onvif_value);
 
-	JSON_Array* array = json_object_get_array(onvif_object, "items");
+	JSON_Array* onvif_array = json_object_get_array(onvif_object, "items");
 
 	
 	bool boo = false;
-	for (size_t i = 0; i < json_array_get_count(array); i++) {
-		JSON_Value* manu_value = json_array_get_value(array, i); //JSON of one individual manufacturer
+	JSON_Value* existing_topic_value;
+
+	//TODO
+	/*
+	Run checks not just if the manufacturer is in the json, but if each specific topic is aswell
+	*/
+
+	for (size_t i = 0; i < json_array_get_count(onvif_array); i++) {
+		JSON_Value* manu_value = json_array_get_value(onvif_array, i); //JSON of one individual manufacturer
 		JSON_Object* manu_object = json_value_get_object(manu_value);
 		json_object_get_value(manu_object, "manufacturer");
 		std::string manu_json(json_serialize_to_string(json_object_get_value(manu_object, "manufacturer")));
 		manu_json = manu_json.substr(1, manu_json.size() - 2);
 		if (!manu_json.compare(manu)) {
 			boo = true;
+			existing_topic_value = manu_value;
 		}
 	}
 
-	if (boo) {//What to do here. Add a new section for specific model? Ignore for now
-		std::cout << "manufacturer: " << manu << " is contained in the JSON" << std::endl;
+	if (boo) {
+		std::cout << "manufacturer: " << manu << " is contained in the JSON, individual topics will be added" << std::endl;
+
+		JSON_Object* existing_topic_object = json_value_get_object(existing_topic_value);
+
+		JSON_Value* element_value = element;
+		JSON_Object* element_object = json_value_get_object(element_value);
+
+		//JSON values from the camera
+		JSON_Value* element_motion_topic_value = json_object_get_value(element_object, "motion");
+		JSON_Array* element_motion_array = json_object_get_array(json_value_get_object(element_motion_topic_value), "topic");
+
+		//JSON values from the json file
+		JSON_Value* motion_topic_value = json_object_get_value(existing_topic_object, "motion");
+		JSON_Array* motion_array = json_object_get_array(json_value_get_object(motion_topic_value), "topic");
+
+		for (size_t i = 0; i < json_array_get_count(element_motion_array); ++i) {
+			JSON_Value* value_i = json_array_get_value(element_motion_array, i);
+			std::string string_i = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_i), "name")));
+			bool boo = false;
+			for (size_t j = 0; j < json_array_get_count(motion_array); ++j) {
+				JSON_Value* value_j = json_array_get_value(motion_array, j);
+				std::string string_j = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_j), "name")));
+				if (string_i.compare(string_j) == 0) {//Element exists within the json
+					boo = true;
+				}
+			}
+			if (boo == false) {//Does not currently add the element in
+				//std::cout << json_serialize_to_string_pretty(value_i) << std::endl;
+				json_array_append_value(motion_array, value_i);
+			}
+		}
+
+
+		JSON_Value* element_input_topic_value = json_object_get_value(element_object, "input trigger");
+		JSON_Array* element_input_array = json_object_get_array(json_value_get_object(element_input_topic_value), "topic");
+
+		JSON_Value* input_topic_value = json_object_get_value(existing_topic_object, "input trigger");
+		JSON_Array* input_array = json_object_get_array(json_value_get_object(input_topic_value), "topic");
+
+		for (size_t i = 0; i < json_array_get_count(element_input_array); ++i) {
+			bool boo = false;
+			JSON_Value* value_i = json_array_get_value(element_input_array, i);
+			std::string string_i = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_i), "name")));
+			for (size_t j = 0; j < json_array_get_count(input_array); ++j) {
+				JSON_Value* value_j = json_array_get_value(input_array, j);
+				std::string string_j = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_j), "name")));
+				if (string_i.compare(string_j) == 0) {//Element exists within the json
+					boo = true;
+				}
+			}
+			if (boo == false) {//Does not yet work, accessing through index in original array??
+				//std::cout << json_serialize_to_string_pretty(value_i) << std::endl;
+				json_array_append_value(input_array, value_i);
+			}
+		}
+
+		std::cout << json_serialize_to_string_pretty(root_value) << std::endl;
+
+
 		return;
 	}
-	
-	std::cout << "manufacturer: " << manu << " is not contained in the JSON" << std::endl;
+	else {
+		std::cout << "manufacturer: " << manu << " is not contained in the JSON" << std::endl;
 
-	json_array_append_value(array, element);
+		json_array_append_value(onvif_array, element);
 
-	//JSON_Status status = json_serialize_to_file_pretty(root_value, filename.c_str());
+		char* string = json_serialize_to_string_pretty(root_value);
 
-	char* string = json_serialize_to_string_pretty(root_value);
+		removeChar(string, '\\');
 
-	removeChar(string, '\\');
+		std::ofstream finalfile;
+		finalfile.open(filename);
+		finalfile << string;
+		finalfile.close();
 
-	std::ofstream finalfile;
-	finalfile.open(filename);
-	finalfile << string;
-	finalfile.close();
-
-	return;
+		return;
+	}
 }
 
 std::wstring ToWstring(std::string s)
