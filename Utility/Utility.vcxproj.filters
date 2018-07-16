@@ -25,9 +25,6 @@
     <ClCompile Include="..\include\split.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\ValidateCred.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\3rdparty\parson\parson.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
     <ClCompile Include="..\include\analytics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\Credentials.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\ParseEventProperties.h">
@@ -64,9 +64,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\event.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\ValidateCred.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\3rdparty\parson\parson.h">
@@ -94,6 +91,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\analytics.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Credentials.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

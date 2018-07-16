@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "soapStub.h"
-#include "ValidateCred.hpp"
+#include "Credentials.hpp"
 #include "GetData.hpp"
 #include "SaveToFile.hpp"
 #include "device.hpp"
@@ -12,19 +12,20 @@
 
 int main(int argc, char* argv[]) {
 
-	ValidateCredentials creds(argc, argv);
-	
-	if (creds.errorBoo == true) {
-		std::cerr << creds.eString << std::endl;
+	Credentials creds(argc, argv);
+
+	if (creds.ValidateCreds()) {
+		printCredErrors(creds.ValidateCreds());
 		return 0;
-	} else if (creds.fileBoo == false) {
-		std::cout << creds.fString << std::endl;
 	}
+
 	std::string username = creds.username;
 	std::string password = creds.password;
-	std::string url = creds.url;
+	std::string url = std::string(creds.url);
 
-	GetData data(username, password, url);
+	bool verbose = creds.verbose;
+
+	GetData data(username, password, url, verbose);
 
 	DeviceIO deviceIO;
 	deviceIO.SetParameters(username, password, data.io_url);
@@ -48,7 +49,9 @@ int main(int argc, char* argv[]) {
 	}
 	
 	int digital_inputs_result = deviceIO.GetDigitalInputs();
-	std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;
+	if (verbose) {
+		std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;
+	}
 	std::vector<std::string> DigitalInputs;
 	if (digital_inputs_result == 200) {
 		
@@ -96,13 +99,14 @@ int main(int argc, char* argv[]) {
 
 	data.DataToJson();
 	std::string name = data.returnManu();
-
-	if (creds.fileBoo) {//Opens filestream with an existing file or creates new file
-		SaveToFile(creds.fString, name, data.returnRoot());
+	
+	if (creds.filepath) {//Opens filestream with an existing file or creates new file
+		SaveToFile(creds.filepath, name, data.returnRoot());
 	}
 	else {
-		std::cout << data.returnStream().str();
+		std::cout << data.returnStream().str() << std::endl;
 	}
+	
 }
 
 

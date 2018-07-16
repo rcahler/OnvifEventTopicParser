@@ -30,7 +30,7 @@
     <ClCompile Include="..\include\removeChar.cpp" />
     <ClCompile Include="..\include\SaveToFile.cpp" />
     <ClCompile Include="..\include\split.cpp" />
-    <ClCompile Include="..\include\ValidateCred.cpp" />
+    <ClCompile Include="..\include\Credentials.cpp" />
     <ClCompile Include="GetData.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -46,7 +46,7 @@
     <ClInclude Include="..\include\removeChar.h" />
     <ClInclude Include="..\include\SaveToFile.hpp" />
     <ClInclude Include="..\include\split.h" />
-    <ClInclude Include="..\include\ValidateCred.hpp" />
+    <ClInclude Include="..\include\Credentials.hpp" />
     <ClInclude Include="GetData.hpp" />
     <ClInclude Include="Topic.h" />
   </ItemGroup>

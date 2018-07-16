@@ -8,31 +8,33 @@
 #include "Analytics.hpp"
 
 
-GetData::GetData(std::string user, std::string pass, std::string url) {
+GetData::GetData(std::string user, std::string pass, std::string url, bool verbose) {
 	m_username = user;
 	m_password = pass;
 	m_url = url;
+	m_verbose = verbose;
 
 	device.SetParameters(user, pass, url);
 
-	if (device.SyncCamTime() != SOAP_OK) {
+	if ((device.SyncCamTime() != SOAP_OK)&&(verbose)) {
 			//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
 			std::cerr << "The camera and local system times could not be synched" << std::endl;
 		}
 
 	if (device.GetCapabilities() != SOAP_OK) {
-			std::cerr << "Device Capabilities could not be gotten, the camera could not be connected too" << std::endl;
+		if (verbose) {
+			std::cerr << "Device Capabilities could not be gotten ";
+		}
+			std::cerr << "the camera could not be connected too" << std::endl;
 			return;
 		}
 
-	if (device.GetDeviceInformation() != SOAP_OK) {
+	if ((device.GetDeviceInformation() != SOAP_OK)&&(verbose)) {
 			std::cerr << "Device Information could not be gotten" << std::endl;
-			return;
 	}
 
-	if (device.GetRelayOutputs() != SOAP_OK) {
+	if ((device.GetRelayOutputs() != SOAP_OK) && (verbose)) {
 		std::cerr << "Relay Outputs could not be gotten" << std::endl;
-		return;
 	}
 
 	event_url = device.evXaddr;
@@ -43,7 +45,7 @@ GetData::GetData(std::string user, std::string pass, std::string url) {
 	profile.SetParameters(m_username, m_password, media_url);
 	event.SetParameters(m_username, m_password, event_url);
 
-	if (event.GetEventProperties() != SOAP_OK) {
+	if ((event.GetEventProperties() != SOAP_OK) && (verbose)) {
 		std::cerr << "Event Properties could not be gotten" << std::endl;
 	}
 
@@ -356,7 +358,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		}
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
-		if (!relay_outputs.size()) {
+		if ((!relay_outputs.size()) && (m_verbose)) {
 			std::cerr << "no relay_outputs" << std::endl;
 		}
 		std::vector<char*> strings;
@@ -422,8 +424,8 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 			}
 		}
 		else if (pair.first.find("Relay") != std::string::npos) {
-			if (!relay_outputs.size()) {
-				//std::cerr << "no relay_outputs" << std::endl;
+			if ((!relay_outputs.size()) && (m_verbose)) {
+				std::cerr << "no relay_outputs" << std::endl;
 			}
 			std::vector<char*> strings;
 			for (size_t i = 0; i < relay_outputs.size(); ++i) {

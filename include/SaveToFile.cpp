@@ -61,6 +61,7 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	Run checks not just if the manufacturer is in the json, but if each specific topic is aswell
 	*/
 
+	size_t index = 0;
 	for (size_t i = 0; i < json_array_get_count(onvif_array); i++) {
 		JSON_Value* manu_value = json_array_get_value(onvif_array, i); //JSON of one individual manufacturer
 		JSON_Object* manu_object = json_value_get_object(manu_value);
@@ -70,6 +71,7 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 		if (!manu_json.compare(manu)) {
 			boo = true;
 			existing_topic_value = manu_value;
+			index = i;
 		}
 	}
 
@@ -102,14 +104,16 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 			}
 			if (boo == false) {//Does not currently add the element in
 				//std::cout << json_serialize_to_string_pretty(value_i) << std::endl;
+				//json_array_get_value(onvif_array, index);
 				json_array_append_value(motion_array, value_i);
 			}
 		}
 
-
+		//JSON values from the camera
 		JSON_Value* element_input_topic_value = json_object_get_value(element_object, "input trigger");
 		JSON_Array* element_input_array = json_object_get_array(json_value_get_object(element_input_topic_value), "topic");
 
+		//JSON values from the json file
 		JSON_Value* input_topic_value = json_object_get_value(existing_topic_object, "input trigger");
 		JSON_Array* input_array = json_object_get_array(json_value_get_object(input_topic_value), "topic");
 
@@ -130,7 +134,7 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 			}
 		}
 
-		std::cout << json_serialize_to_string_pretty(root_value) << std::endl;
+		//std::cout << json_serialize_to_string_pretty(root_value) << std::endl;
 
 
 		return;
@@ -168,7 +172,7 @@ JSON_Value* CreateJsonHeader() {
 	std::tm* tm = std::localtime(&time);
 
 	std::stringstream s;
-	s << tm->tm_year + 1900 << "-" << tm->tm_mon + 1 << "-" << tm->tm_mday; 
+	s << tm->tm_year + 1900 << "-" << tm->tm_mon + 1 << "-" << tm->tm_mday;
 
 	json_object_set_string(root_object, "version", "1.0.000"); //Check what version this should be
 	json_object_set_string(root_object, "modified-date", s.str().c_str());

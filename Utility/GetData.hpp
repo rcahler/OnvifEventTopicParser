@@ -8,7 +8,7 @@
 
 class GetData {
 public: //Constructor
-	GetData(std::string user, std::string pass, std::string url);
+	GetData(std::string user, std::string pass, std::string url, bool);
 private://Internal functions
 	void ToJsonTopicTwoElements(std::string, std::vector<std::pair<std::string, std::string>>);
 	void ToJsonTopicMoreElements(std::string, std::vector<std::pair<std::string, std::string>>);
@@ -28,6 +28,7 @@ private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_url;
+	bool m_verbose;
 	std::string event_url;
 	std::string media_url;
 	std::vector<std::string> motionV;
