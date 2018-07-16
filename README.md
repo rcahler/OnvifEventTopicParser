@@ -9,4 +9,11 @@ This utility is a command line tool which connects to an Onvif camera and return
 
 The json data can be sent to a file, but if a file is not specified then the data will be printed to the command line.
 
-`Utility.exe [camera username] [camera password] [camera ip address] [optional: file path to send data]`
+### Commands:
+        -h: Optional, Brings up all avaliable commands and usage information
+        -v: Optional, Verbose output
+        -u: Req, Username of the camera whose topics are being gotten
+        -p: Optional, Password of the camera whose topics are being gotten, requiered on most cameras but not all
+        -ip: Req, IP address of the camera whose topics are being gotten
+        -f: Optional, Filepath to the json file (Whether it exists or needs to be created) where the data will be added. If no file is given, the data will be sent to the command line
+        -o: Optional, Place at the end of the input parameters uses the built in order of [Utility.exe username password ip /filepath/]
