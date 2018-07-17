@@ -64,6 +64,11 @@ Credentials::Credentials(int argc, char* argv[]) {
 			}
 		}
 	}
+
+	if (password == NULL) {
+		password = new char[8];
+		strcpy_s(password, 8, "NO_PASS");
+	}
 }
 
 int Credentials::ValidateCreds()

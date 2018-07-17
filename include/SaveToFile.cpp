@@ -169,10 +169,11 @@ JSON_Value* CreateJsonHeader() {
 	JSON_Object *root_object = json_value_get_object(root);
 
 	std::time_t time = std::time(NULL);
-	std::tm* tm = std::localtime(&time);
+	std::tm tm;
+	localtime_s(&tm, &time);
 
 	std::stringstream s;
-	s << tm->tm_year + 1900 << "-" << tm->tm_mon + 1 << "-" << tm->tm_mday;
+	s << tm.tm_year + 1900 << "-" << tm.tm_mon + 1 << "-" << tm.tm_mday;
 
 	json_object_set_string(root_object, "version", "1.0.000"); //Check what version this should be
 	json_object_set_string(root_object, "modified-date", s.str().c_str());

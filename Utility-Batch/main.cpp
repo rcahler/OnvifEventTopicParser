@@ -51,12 +51,6 @@ int main(int argc, char* argv[]) {
 		std::string line = ss.str();
 		std::vector<std::string> split_line = split(line, ' ');
 
-		/*
-		for (size_t i = 0; i < split_line.size(); ++i) {
-			std::cout << split_line[i] << " ";
-		}
-		*/
-
 		if (split_line.size() == 1) { //Should only be the initial line
 			if (outputFilename != NULL) {
 				std::cerr << "Issue on line #" << lineNumber << ", too few arguements. This line will be skipped";
@@ -65,7 +59,6 @@ int main(int argc, char* argv[]) {
 				int len = strlen(split_line[0].c_str()) + 1;
 				outputFilename = new char[len];
 				strcpy_s(outputFilename, len, split_line[0].c_str());
-				//std::cout << outputFilename << std::endl;
 			}
 		}
 		else if (split_line.size() == 3) { //Should only be the initial line

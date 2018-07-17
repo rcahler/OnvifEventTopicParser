@@ -24,11 +24,13 @@ public:
 	std::stringstream& returnStream();
 	std::string returnManu();
 	JSON_Value* returnRoot();
+	bool connected;
 private:
 	std::string m_username;
 	std::string m_password;
 	std::string m_url;
 	bool m_verbose;
+	
 	std::string event_url;
 	std::string media_url;
 	std::vector<std::string> motionV;

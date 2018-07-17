@@ -84,8 +84,6 @@ int main(int argc, char* argv[]) {
 
 		DigitalInputs = ParseDigitalInputsXML(contents);
 		free(contents);
-
-	
 	}
 	else if (digital_inputs_result == SOAP_OK) {
 		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
@@ -103,10 +101,10 @@ int main(int argc, char* argv[]) {
 	data.DataToJson();
 	std::string name = data.returnManu();
 	
-	if (creds.filepath) {//Opens filestream with an existing file or creates new file
+	if ((creds.filepath)&&(data.connected)) {//Opens filestream with an existing file or creates new file
 		SaveToFile(creds.filepath, name, data.returnRoot());
 	}
-	else {
+	else if (data.connected) {
 		std::cout << data.returnStream().str() << std::endl;
 	}
 	

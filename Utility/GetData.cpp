@@ -16,18 +16,25 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 
 	device.SetParameters(user, pass, url);
 
-	if ((device.SyncCamTime() != SOAP_OK)&&(verbose)) {
+	int SyncCam = device.SyncCamTime();
+
+	if (SyncCam != SOAP_OK) {
+		if ((SyncCam == 2) && (verbose)) {
 			//This does not actually mean that the camera cannot be conntacted too, as certain Onvif cameras do not allow you to sync time
-			std::cerr << "The camera and local system times could not be synched" << std::endl;
+			std::cerr << "The camera and local system times could not be synched, but this is normal for some cameras" << std::endl;
 		}
+		else if (SyncCam == 1) {
+			std::cerr << "the camera could not be connected too" << ". The provided ip address could not be reached." << std::endl;
+			connected = false;
+		}
+			
+	}
 
 	if (device.GetCapabilities() != SOAP_OK) {
 		if (verbose) {
 			std::cerr << "Device Capabilities could not be gotten ";
 		}
-			std::cerr << "the camera could not be connected too" << std::endl;
-			return;
-		}
+	}
 
 	if ((device.GetDeviceInformation() != SOAP_OK)&&(verbose)) {
 			std::cerr << "Device Information could not be gotten" << std::endl;
@@ -45,8 +52,19 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 	profile.SetParameters(m_username, m_password, media_url);
 	event.SetParameters(m_username, m_password, event_url);
 
-	if ((event.GetEventProperties() != SOAP_OK) && (verbose)) {
-		std::cerr << "Event Properties could not be gotten" << std::endl;
+	if(event.GetEventProperties() != SOAP_OK) {
+
+		std::cerr << "the camera could not be connected too" << std::endl;
+		connected = false;
+		
+		if (verbose) {
+			std::cerr << "Event Properties could not be gotten" << std::endl;
+			return;
+		}
+		
+	}
+	else {
+		connected = true;
 	}
 
 	Manufacturer = device.Manufacturer;
@@ -62,7 +80,7 @@ void GetData::DataToJson()
 
 	std::vector<Topic> topics = ParseEventProperties(domVector);
 
-	if (topics.size() < 1) {
+	if ((topics.size() < 1)&&(m_verbose)){
 		std::cerr << "This camera does not support topics" << std::endl;
 		return;
 	}

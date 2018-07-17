@@ -10,7 +10,7 @@ int Device::SyncCamTime()
 	_tds__GetSystemDateAndTimeResponse GSDATresp;
 	int result = deviceBindProxy.GetSystemDateAndTime(&GSDAT, GSDATresp);
 	if (result != SOAP_OK) {
-		return result;
+		return 1;
 	}
 	
 	tt__DateTime* camTime = GSDATresp.SystemDateAndTime->UTCDateTime;
@@ -52,8 +52,12 @@ int Device::SyncCamTime()
 	UTCDateTime->Date = &thisDate;	
 	UTCDateTime->Time = &thisTime;
 	SetDateTimeReq.UTCDateTime = UTCDateTime;
-	deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
-	return result;
+	result = deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
+	if (result != SOAP_OK) {
+		return 2;
+	}
+
+	return 0;
 }
 
 int Device::GetDeviceInformation()
