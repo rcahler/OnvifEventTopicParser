@@ -56,7 +56,10 @@ int main(int argc, char* argv[]) {
 	if (digital_inputs_result == 200) {
 		
 		FILE* tFile;
-		tFile = tmpfile();
+		errno_t file_error = tmpfile_s(&tFile);
+		if ((file_error) && (verbose)) {
+			std::cerr << file_error << std::endl;
+		}
 		
 		if (soap_register_plugin(deviceIO.GDIresp.soap, logging)) {
 			soap_print_fault(deviceIO.GDIresp.soap, stderr); // failed to register

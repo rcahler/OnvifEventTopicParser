@@ -21,6 +21,8 @@ Credentials::Credentials(int argc, char* argv[]) {
 
 	
 	for (size_t i = 1; i < argc; ++i) {
+
+		bool old_way = false;
 		if (strcmp(argv[i], "-u") == 0) { //username
 			if ((i + 1) <= argc) {
 				username = argv[i + 1];
@@ -47,15 +49,25 @@ Credentials::Credentials(int argc, char* argv[]) {
 		else if (strcmp(argv[i], "-v") == 0) {
 			verbose = true;
 		}
+		
+		
+		if (strcmp(argv[argc - 1], "-o") == 0) {
+			old_way = true;
+		}
+
+		if (old_way) {
+			username = argv[1];
+			password = argv[2];
+			ip = argv[3];
+			if ((argv[4]) && (argc >= 5)) {
+				filepath = argv[4];
+			}
+		}
 	}
 }
 
 int Credentials::ValidateCreds()
 {
-	//std::cout << username << std::endl;
-	//std::cout << password << std::endl;
-	//std::cout << ip << std::endl;
-
 	if (help) {
 		printHelp();
 	}
@@ -80,14 +92,35 @@ int Credentials::ValidateCreds()
 			return 2;
 		}
 	}
-
 	char xAddr[MAX_URL_LENGTH] = { 0 };
 	strcat_s(xAddr, MAX_URL_LENGTH, "http://");
 	strcat_s(xAddr, MAX_URL_LENGTH, ip);
 	strcat_s(xAddr, MAX_URL_LENGTH, "/onvif/device_service");
 
 	url = xAddr;
-	
+
+	//Checks valid json file
+
+	if (filepath) {
+
+		if (strlen(filepath) > 5) {
+			char filetype[6];
+
+			int j = 0;
+			for (size_t i = strlen(filepath) - 5; i < strlen(filepath); ++i) {
+				filetype[j] = filepath[i];
+				++j;
+			}
+			filetype[5] = '\0'; //Null terminator
+			if (!strcmp(filetype, ".json") == 0) {
+				return 3;
+			}
+		}
+		else {
+			return 3;
+		}
+	}
+
 	return 0;
 }
 
@@ -101,6 +134,8 @@ void printCredErrors(int error)
 	case 2:
 		std::cerr << "Malformed IPv4 address" << std::endl;
 		break;
+	case 3:
+		std::cerr << "If pumping the data to a file, list a valid filepath" << std::endl;
 	}
 	return;
 }
@@ -115,6 +150,8 @@ void printHelp() {
 	std::cerr << "	-p: Optional, Password of the camera whose topics are being gotten, requiered on most cameras but not all" << std::endl;
 	std::cerr << "	-ip: Req, IP address of the camera whose topics are being gotten" << std::endl;
 	std::cerr << "	-f: Optional, Filepath to the json file (Whether it exists or needs to be created) where the data will be added. If no file is given, the data will be sent to the command line" << std::endl;
+	std::cerr << "	-o: Testing, Place at the end of the input parameters uses the built in order of [Utility.exe username password ip /filepath/]" << std::endl;
+	//std::cerr << "	-b: Optional, Batch tests cameras from a text file" << std::endl;
 	std::cerr << "" << std::endl;
 	std::cerr << "Usage:" << std::endl;
 	std::cerr << "----------" << std::endl;
