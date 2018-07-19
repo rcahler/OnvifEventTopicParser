@@ -24,6 +24,7 @@
     <ClCompile Include="..\include\device.cpp" />
     <ClCompile Include="..\include\DeviceIO.cpp" />
     <ClCompile Include="..\include\event.cpp" />
+    <ClCompile Include="..\include\GetData.cpp" />
     <ClCompile Include="..\include\ParseDigitalInputsXML.cpp" />
     <ClCompile Include="..\include\ParseEventProperties.cpp" />
     <ClCompile Include="..\include\profiles.cpp" />
@@ -31,7 +32,6 @@
     <ClCompile Include="..\include\SaveToFile.cpp" />
     <ClCompile Include="..\include\split.cpp" />
     <ClCompile Include="..\include\Credentials.cpp" />
-    <ClCompile Include="GetData.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -40,6 +40,7 @@
     <ClInclude Include="..\include\device.hpp" />
     <ClInclude Include="..\include\DeviceIO.hpp" />
     <ClInclude Include="..\include\event.hpp" />
+    <ClInclude Include="..\include\GetData.hpp" />
     <ClInclude Include="..\include\ParseDigitalInputsXML.hpp" />
     <ClInclude Include="..\include\ParseEventProperties.h" />
     <ClInclude Include="..\include\profiles.hpp" />
@@ -47,8 +48,7 @@
     <ClInclude Include="..\include\SaveToFile.hpp" />
     <ClInclude Include="..\include\split.h" />
     <ClInclude Include="..\include\Credentials.hpp" />
-    <ClInclude Include="GetData.hpp" />
-    <ClInclude Include="Topic.h" />
+    <ClInclude Include="..\include\Topic.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -180,6 +180,8 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\3rdparty\openssl\lib\32Release;..\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OnvifLib.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <ImageHasSafeExceptionHandlers />
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -203,6 +205,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\3rdparty\openssl\lib\64release;..\x64\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OnvifLib.lib;libcrypto.lib;libssl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

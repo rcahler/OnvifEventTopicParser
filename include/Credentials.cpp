@@ -48,6 +48,11 @@ Credentials::Credentials(int argc, char* argv[]) {
 		}
 		else if (strcmp(argv[i], "-v") == 0) {
 			verbose = true;
+		} 
+		else if (strcmp(argv[i], "-port") == 0) { //port number
+			if ((i + 1) <= argc) {
+				port = argv[i + 1];
+			}
 		}
 		
 		
@@ -100,6 +105,10 @@ int Credentials::ValidateCreds()
 	char xAddr[MAX_URL_LENGTH] = { 0 };
 	strcat_s(xAddr, MAX_URL_LENGTH, "http://");
 	strcat_s(xAddr, MAX_URL_LENGTH, ip);
+	if (port) {
+		std::string p = ":" + std::string(port);
+		strcat_s(xAddr, MAX_URL_LENGTH, p.c_str());
+	}
 	strcat_s(xAddr, MAX_URL_LENGTH, "/onvif/device_service");
 
 	url = xAddr;
@@ -156,6 +165,7 @@ void printHelp() {
 	std::cerr << "	-ip: Req, IP address of the camera whose topics are being gotten" << std::endl;
 	std::cerr << "	-f: Optional, Filepath to the json file (Whether it exists or needs to be created) where the data will be added. If no file is given, the data will be sent to the command line" << std::endl;
 	std::cerr << "	-o: Testing, Place at the end of the input parameters uses the built in order of [Utility.exe username password ip /filepath/]" << std::endl;
+	std::cerr << "	-port: Optional, allows the user to specify a non-standard port number" << std::endl;
 	//std::cerr << "	-b: Optional, Batch tests cameras from a text file" << std::endl;
 	std::cerr << "" << std::endl;
 	std::cerr << "Usage:" << std::endl;

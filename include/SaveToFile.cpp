@@ -54,7 +54,6 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 
 	
 	bool boo = false;
-	JSON_Value* existing_topic_value;
 
 	//TODO
 	/*
@@ -65,77 +64,61 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	for (size_t i = 0; i < json_array_get_count(onvif_array); i++) {
 		JSON_Value* manu_value = json_array_get_value(onvif_array, i); //JSON of one individual manufacturer
 		JSON_Object* manu_object = json_value_get_object(manu_value);
-		json_object_get_value(manu_object, "manufacturer");
+		json_object_get_value(manu_object, "manufacturer"); 
 		std::string manu_json(json_serialize_to_string(json_object_get_value(manu_object, "manufacturer")));
 		manu_json = manu_json.substr(1, manu_json.size() - 2);
 		if (!manu_json.compare(manu)) {
 			boo = true;
-			existing_topic_value = manu_value;
 			index = i;
-		}
+		}	
 	}
 
 	if (boo) {
 		std::cout << "manufacturer: " << manu << " is contained in the JSON, individual topics will be added" << std::endl;
+		JSON_Value* element_value = json_array_get_value(onvif_array, index);
+		JSON_Object* element_obj = json_value_get_object(element_value);
 
-		JSON_Object* existing_topic_object = json_value_get_object(existing_topic_value);
+		
+		JSON_Array* motion_array = json_object_dotget_array(element_obj, "motion.topic");
+		JSON_Array* input_array = json_object_dotget_array(element_obj, "input trigger.topic");
 
-		JSON_Value* element_value = element;
-		JSON_Object* element_object = json_value_get_object(element_value);
-
-		//JSON values from the camera
-		JSON_Value* element_motion_topic_value = json_object_get_value(element_object, "motion");
-		JSON_Array* element_motion_array = json_object_get_array(json_value_get_object(element_motion_topic_value), "topic");
-
-		//JSON values from the json file
-		JSON_Value* motion_topic_value = json_object_get_value(existing_topic_object, "motion");
-		JSON_Array* motion_array = json_object_get_array(json_value_get_object(motion_topic_value), "topic");
-
-		for (size_t i = 0; i < json_array_get_count(element_motion_array); ++i) {
-			JSON_Value* value_i = json_array_get_value(element_motion_array, i);
-			std::string string_i = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_i), "name")));
-			bool boo = false;
-			for (size_t j = 0; j < json_array_get_count(motion_array); ++j) {
-				JSON_Value* value_j = json_array_get_value(motion_array, j);
-				std::string string_j = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_j), "name")));
-				if (string_i.compare(string_j) == 0) {//Element exists within the json
-					boo = true;
-				}
-			}
-			if (boo == false) {//Does not currently add the element in
-				//std::cout << json_serialize_to_string_pretty(value_i) << std::endl;
-				//json_array_get_value(onvif_array, index);
-				json_array_append_value(motion_array, value_i);
-			}
+		//Iterate through motion topics in json
+		for (size_t i = 0; i < json_array_get_count(motion_array); i++) {
+			JSON_Value* json_topic = json_array_get_value(motion_array, i);
+			/*char* string = json_serialize_to_string_pretty(json_topic);
+			std::cout << string << std::endl;*/
 		}
 
-		//JSON values from the camera
-		JSON_Value* element_input_topic_value = json_object_get_value(element_object, "input trigger");
-		JSON_Array* element_input_array = json_object_get_array(json_value_get_object(element_input_topic_value), "topic");
-
-		//JSON values from the json file
-		JSON_Value* input_topic_value = json_object_get_value(existing_topic_object, "input trigger");
-		JSON_Array* input_array = json_object_get_array(json_value_get_object(input_topic_value), "topic");
-
-		for (size_t i = 0; i < json_array_get_count(element_input_array); ++i) {
-			bool boo = false;
-			JSON_Value* value_i = json_array_get_value(element_input_array, i);
-			std::string string_i = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_i), "name")));
-			for (size_t j = 0; j < json_array_get_count(input_array); ++j) {
-				JSON_Value* value_j = json_array_get_value(input_array, j);
-				std::string string_j = std::string(json_serialize_to_string(json_object_get_value(json_value_get_object(value_j), "name")));
-				if (string_i.compare(string_j) == 0) {//Element exists within the json
-					boo = true;
-				}
-			}
-			if (boo == false) {//Does not yet work, accessing through index in original array??
-				//std::cout << json_serialize_to_string_pretty(value_i) << std::endl;
-				json_array_append_value(input_array, value_i);
-			}
+		//Iterate through input topics in json
+		for (size_t i = 0; i < json_array_get_count(input_array); i++) {
+			JSON_Value* json_topic = json_array_get_value(input_array, i);
 		}
 
-		//std::cout << json_serialize_to_string_pretty(root_value) << std::endl;
 
+		JSON_Value* m_test = json_value_init_object();
+		JSON_Object* m_test_o = json_value_get_object(m_test);
+
+		JSON_Value* i_test = json_value_init_object();
+		JSON_Object* i_test_o = json_value_get_object(i_test);
+
+		json_object_set_string(m_test_o, "m_test", "m_test"); //Is added
+		json_object_set_string(i_test_o, "i_test", "i_test"); //Is added
+
+		//Works appending values to file, does not change anything else
+		json_array_append_value(motion_array, m_test);
+		json_array_append_value(input_array, i_test);
+
+		//
+		char* string = json_serialize_to_string_pretty(root_value);
+
+		removeChar(string, '\\');
+
+		std::ofstream finalfile;
+		finalfile.open(filename);
+		finalfile << string;
+		finalfile.close();
+		json_free_serialized_string(string);
+		//
 
 		return;
 	}
@@ -152,6 +135,7 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 		finalfile.open(filename);
 		finalfile << string;
 		finalfile.close();
+		json_free_serialized_string(string);
 
 		return;
 	}

@@ -10,6 +10,7 @@ public:
 private:
 	char* ip;
 	bool help = false;
+	char* port;
 public:
 	char* username;
 	char* password;

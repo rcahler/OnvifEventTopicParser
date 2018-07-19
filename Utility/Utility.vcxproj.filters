@@ -28,9 +28,6 @@
     <ClCompile Include="..\3rdparty\parson\parson.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GetData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\SaveToFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
     <ClCompile Include="..\include\Credentials.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\GetData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\ParseEventProperties.h">
@@ -67,12 +67,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\3rdparty\parson\parson.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GetData.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Topic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\SaveToFile.hpp">
@@ -94,6 +88,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\Credentials.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\Topic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GetData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
