@@ -85,6 +85,9 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 		//Iterate through motion topics in json
 		for (size_t i = 0; i < json_array_get_count(motion_array); i++) {
 			JSON_Value* json_topic = json_array_get_value(motion_array, i);
+			JSON_Object* json_topic_object = json_value_get_object(json_topic);
+
+			std::cout << (json_topic_object, "name") << std::endl;
 			/*char* string = json_serialize_to_string_pretty(json_topic);
 			std::cout << string << std::endl;*/
 		}

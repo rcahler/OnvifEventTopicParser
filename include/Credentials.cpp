@@ -18,6 +18,7 @@ Credentials::Credentials(int argc, char* argv[]) {
 	password = NULL;
 	ip = NULL;
 	filepath = NULL;
+	port = NULL;
 
 	
 	for (size_t i = 1; i < argc; ++i) {
