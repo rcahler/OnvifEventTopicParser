@@ -74,44 +74,97 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	}
 
 	if (boo) {
+
+		//For indeces of cam topics not in JSON
+		std::vector<int> motionVec;
+		std::vector<int> inputVec;
+
 		std::cout << "manufacturer: " << manu << " is contained in the JSON, individual topics will be added" << std::endl;
-		JSON_Value* element_value = json_array_get_value(onvif_array, index);
-		JSON_Object* element_obj = json_value_get_object(element_value);
+		JSON_Value* from_json_value = json_array_get_value(onvif_array, index);
+		JSON_Object* from_json_obj = json_value_get_object(from_json_value);
+
+		JSON_Value* from_cam_value = element;
+		JSON_Object* from_cam_obj = json_value_get_object(from_cam_value);
 
 		
-		JSON_Array* motion_array = json_object_dotget_array(element_obj, "motion.topic");
-		JSON_Array* input_array = json_object_dotget_array(element_obj, "input trigger.topic");
-
+		JSON_Array* json_motion_array = json_object_dotget_array(from_json_obj, "motion.topic");
+		JSON_Array* cam_motion_array = json_object_dotget_array(from_cam_obj, "motion.topic");
+		
 		//Iterate through motion topics in json
-		for (size_t i = 0; i < json_array_get_count(motion_array); i++) {
-			JSON_Value* json_topic = json_array_get_value(motion_array, i);
-			JSON_Object* json_topic_object = json_value_get_object(json_topic);
+		for (size_t i = 0; i < json_array_get_count(cam_motion_array); i++) {
+			JSON_Value* cam_topic = json_array_get_value(cam_motion_array, i);
+			JSON_Object* cam_topic_object = json_value_get_object(cam_topic);
 
-			std::cout << (json_topic_object, "name") << std::endl;
-			/*char* string = json_serialize_to_string_pretty(json_topic);
-			std::cout << string << std::endl;*/
+			const char* cam_name = json_object_get_string(cam_topic_object, "name");
+
+			bool in_json = false;
+			
+			for (size_t j = 0; j < json_array_get_count(json_motion_array); j++) {
+
+				JSON_Value* json_topic = json_array_get_value(json_motion_array, j);
+				JSON_Object* json_topic_object = json_value_get_object(json_topic);
+				//Incorectly formatted json will cause this to crash
+
+				const char* json_name = json_object_get_string(json_topic_object, "name");
+				
+				if (strcmp(json_name, cam_name) == 0) {
+					in_json = true;
+				}
+			}
+
+			if (!in_json) { //Correctly recognizes
+				motionVec.push_back(i);
+			}
 		}
+		for (size_t i = 0; i < motionVec.size(); ++i) {
+			int index = motionVec[i];
+
+			JSON_Value* value = json_array_get_value(cam_motion_array, index);
+			
+			json_array_append_value(json_motion_array,value);
+		}
+
 
 		//Iterate through input topics in json
-		for (size_t i = 0; i < json_array_get_count(input_array); i++) {
-			JSON_Value* json_topic = json_array_get_value(input_array, i);
+		
+		JSON_Array* json_input_array = json_object_dotget_array(from_json_obj, "input trigger.topic");
+		JSON_Array* cam_input_array = json_object_dotget_array(from_cam_obj, "input trigger.topic");
+
+		
+		//Iterate through input topics in json
+		for (size_t i = 0; i < json_array_get_count(cam_input_array); i++) {
+			JSON_Value* cam_topic = json_array_get_value(cam_input_array, i);
+			JSON_Object* cam_topic_object = json_value_get_object(cam_topic);
+
+			const char* cam_name = json_object_get_string(cam_topic_object, "name");
+			bool in_json = false;
+
+			for (size_t j = 0; j < json_array_get_count(json_input_array); j++) {
+				JSON_Value* json_topic = json_array_get_value(json_input_array, j);
+				JSON_Object* json_topic_object = json_value_get_object(json_topic);
+				//Incorectly formatted json will cause this to crash
+
+				const char* json_name = json_object_get_string(json_topic_object, "name");
+
+				if (strcmp(json_name, cam_name) == 0) {
+					in_json = true;
+				}
+			}
+
+			if (!in_json) { //Correctly recognizes
+				inputVec.push_back(i);
+			}
+		}
+		for (size_t i = 0; i < inputVec.size(); ++i) {
+			int index = inputVec[i];
+
+			JSON_Value* value = json_array_get_value(cam_input_array, index);
+
+			json_array_append_value(json_input_array,value);
 		}
 
 
-		JSON_Value* m_test = json_value_init_object();
-		JSON_Object* m_test_o = json_value_get_object(m_test);
 
-		JSON_Value* i_test = json_value_init_object();
-		JSON_Object* i_test_o = json_value_get_object(i_test);
-
-		json_object_set_string(m_test_o, "m_test", "m_test"); //Is added
-		json_object_set_string(i_test_o, "i_test", "i_test"); //Is added
-
-		//Works appending values to file, does not change anything else
-		json_array_append_value(motion_array, m_test);
-		json_array_append_value(input_array, i_test);
-
-		//
 		char* string = json_serialize_to_string_pretty(root_value);
 
 		removeChar(string, '\\');
@@ -121,7 +174,6 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 		finalfile << string;
 		finalfile.close();
 		json_free_serialized_string(string);
-		//
 
 		return;
 	}
