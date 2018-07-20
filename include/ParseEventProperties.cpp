@@ -9,6 +9,16 @@
 //Each of the string vectors returned has the Topic name, the name of the data and the data type as seperate strings
 std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 
+	/*
+	for (size_t i = 0; i < dom.size(); i++) {
+		std::cout << "HERE" << std::endl;
+		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
+			std::cout << "HERE" << std::endl;
+			std::cout << it->name << std::endl;
+		}
+	}
+	*/
+
 	std::stringstream stream;
 	//Parse
 	for (size_t i = 0; i < dom.size(); i++) {
@@ -16,14 +26,16 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 		//This clearly is not the most effiecient way of doing this, but soap_dom does not provide a distance class
 		size_t depth = 0;
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
-			if (it->depth() > depth) { depth = it->depth(); }
+			if (it->depth() > depth) {
+				depth = it->depth();
+			}
 		}
 		std::string* Topic = new std::string[depth];
 		// print attribute tags
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
 			std::string itTag(it->tag());
 			Topic[it->depth() - 1] = itTag;
-			if (itTag.find("tt:SimpleItemDescription") != std::string::npos) { //Get the attributes of the element
+			if (itTag.find("tt:SimpleItem") != std::string::npos) { //Get the attributes of the element
 				if (it->atts) {
 					//There has to be a better way to do this but I can't figure it out
 					soap_dom_attribute dom = *it->atts;
@@ -32,7 +44,9 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 					for (size_t j = 0; j < depth; j++) {
 						if (Topic[j].find("tt:") == std::string::npos) {
 							//Make look better
-							if (Topic[j].find(':') != std::string::npos) { stream << split(Topic[j], ':')[1] << "/"; }
+							if (Topic[j].find(':') != std::string::npos) {
+								stream << split(Topic[j], ':')[1] << "/";
+							}
 							else {
 								stream << Topic[j] << "/"; 
 							}
@@ -51,6 +65,7 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 			}
 		}
 	}
+
 	std::vector<std::string> splitByLine = split(stream.str(), '\n');
 	std::vector<std::vector<std::string>> splitBySpace;
 

@@ -52,7 +52,8 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 	profile.SetParameters(m_username, m_password, media_url);
 	event.SetParameters(m_username, m_password, event_url);
 
-	if(event.GetEventProperties() != SOAP_OK) {
+	int eventResp = event.GetEventProperties();
+	if(eventResp != SOAP_OK) {
 
 		std::cerr << "the camera could not be connected too" << std::endl;
 		connected = false;
