@@ -484,8 +484,6 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 
 JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 {
-	//std::cout << "HERE" << std::endl;
-
 	JSON_Value* value = json_value_init_object();
 	JSON_Object* json = json_value_get_object(value);
 

@@ -1684,9 +1684,24 @@ JSON_Status json_array_clear(JSON_Array *array) {
 }
 
 JSON_Status json_array_append_value(JSON_Array *array, JSON_Value *value) {
-    if (array == NULL || value == NULL || value->parent != NULL) {
+    /*if (array == NULL || value == NULL || value->parent != NULL) {
+		printf("FAIL\n");
         return JSONFailure;
-    }
+    }*/
+
+	if (array == NULL) {
+		printf("Null Array\n");
+		if (value == NULL) {
+			printf("Null Value\n");
+			if (value->parent != NULL) {
+				printf("Parent has value\n");
+				return JSONFailure;
+			}
+			return JSONFailure;
+		}
+		return JSONFailure;
+	}
+
     return json_array_add(array, value);
 }
 

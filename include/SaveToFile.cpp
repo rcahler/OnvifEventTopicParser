@@ -85,32 +85,32 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 
 		JSON_Value* from_cam_value = element;
 		JSON_Object* from_cam_obj = json_value_get_object(from_cam_value);
-
 		
 		JSON_Array* json_motion_array = json_object_dotget_array(from_json_obj, "motion.topic");
 		JSON_Array* cam_motion_array = json_object_dotget_array(from_cam_obj, "motion.topic");
-		
+
 		//Iterate through motion topics in json
-		for (size_t i = 0; i < json_array_get_count(cam_motion_array); i++) {
+		for (size_t i = 0; i < json_array_get_count(cam_motion_array); ++i) {
 			JSON_Value* cam_topic = json_array_get_value(cam_motion_array, i);
 			JSON_Object* cam_topic_object = json_value_get_object(cam_topic);
 
 			const char* cam_name = json_object_get_string(cam_topic_object, "name");
 
 			bool in_json = false;
-			
-			for (size_t j = 0; j < json_array_get_count(json_motion_array); j++) {
+
+			for (size_t j = 0; j < json_array_get_count(json_motion_array); ++j) {
 
 				JSON_Value* json_topic = json_array_get_value(json_motion_array, j);
 				JSON_Object* json_topic_object = json_value_get_object(json_topic);
-				//Incorectly formatted json will cause this to crash
 
+				//Incorectly formatted json will cause this to crash
 				const char* json_name = json_object_get_string(json_topic_object, "name");
 				
 				if (strcmp(json_name, cam_name) == 0) {
 					in_json = true;
 				}
 			}
+
 
 			if (!in_json) { //Correctly recognizes
 				motionVec.push_back(i);
@@ -119,14 +119,14 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 		for (size_t i = 0; i < motionVec.size(); ++i) {
 			int index = motionVec[i];
 
+			//For whatever reason the call does not work if not outputing
 			JSON_Value* value = json_array_get_value(cam_motion_array, index);
-			
-			json_array_append_value(json_motion_array,value);
+			std::stringstream st;
+			st << "Trying to append value to motion array: " << json_array_append_value(json_motion_array, value) << std::endl;
+			std::cout << st.str() << std::endl;
 		}
 
-
 		//Iterate through input topics in json
-		
 		JSON_Array* json_input_array = json_object_dotget_array(from_json_obj, "input trigger.topic");
 		JSON_Array* cam_input_array = json_object_dotget_array(from_cam_obj, "input trigger.topic");
 
@@ -160,10 +160,11 @@ void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 
 			JSON_Value* value = json_array_get_value(cam_input_array, index);
 
-			json_array_append_value(json_input_array,value);
+			//For whatever reason the call does not work if not outputing
+			std::stringstream st;
+			st << "Trying to append value to input trigger array: " << json_array_append_value(json_input_array,value) << std::endl;
+			std::cout << st.str() << std::endl;
 		}
-
-
 
 		char* string = json_serialize_to_string_pretty(root_value);
 
