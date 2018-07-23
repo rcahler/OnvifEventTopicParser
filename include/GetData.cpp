@@ -165,13 +165,6 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	removeChar(c_name, '\\');
 	json_object_set_string(topic_object, "name", c_name);
 
-	/*
-	for (size_t i = 0; i < elements.size(); i++) {
-		
-		<< elements[i].first << " " << elements[i].second << std::endl;
-	}
-	*/
-
 	JSON_Value *source_value = json_value_init_object();
 	JSON_Object *source_object = json_value_get_object(source_value);
 	JSON_Value *data_value = json_value_init_object();
@@ -194,7 +187,7 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		//std::cout << "Neither motion or input trigger: " << name << std::endl;
+		std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 	return;
 }
@@ -336,7 +329,7 @@ bool GetData::IsInTrig(std::string s)
 std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string, std::string> pair)
 {
 	std::string token;
-
+	
 	if (pair.second.find("AlarmInToken") != std::string::npos) {
 	}
 	else if (pair.second.find("InputToken") != std::string::npos) {
@@ -402,9 +395,8 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		return roString;
 	}
 	else if (pair.second.find("ReferenceToken") != std::string::npos) {
-		
 		if (pair.first.find("VideoSource") != std::string::npos) {
-			//std::cout << pair.first << " " << pair.second << std::endl;
+
 		} else if (pair.first.find("Input") != std::string::npos) {
 			if ((diSoap)||(diString)) {
 				std::vector<char*> strings;
@@ -440,6 +432,8 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 				diString = '[' + diString + ']';
 
 				return diString;
+			} else if (device.num_of_input_connectors) { //Treat like int values
+				std::cout << "Finish turning input connector into num" << std::endl;
 			}
 		}
 		else if (pair.first.find("Relay") != std::string::npos) {
@@ -485,8 +479,11 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 
 JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 {
+
 	JSON_Value* value = json_value_init_object();
 	JSON_Object* json = json_value_get_object(value);
+
+	
 
 	if ((pair.second.find("boolean") != std::string::npos) || (pair.second.find("string") != std::string::npos)) {
 		if ((pair.first.find("LogicalState") != std::string::npos)|| (pair.first.find("state") != std::string::npos)|| (pair.first.find("Level") != std::string::npos)) {
@@ -515,8 +512,25 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 		}
 	}
 	else if (pair.second.find("int") != std::string::npos) {
-		json_object_set_string(json, "name", pair.first.c_str());
-		json_object_set_string(json, "datatype", pair.second.c_str());
+
+		//Create an array here for index based DigitalIO from device caps
+		if (pair.first.find("Index") != std::string::npos) {
+			JSON_Value* v_array = json_value_init_array();
+			JSON_Array* array = json_value_get_array(v_array);
+
+
+			for (int i = 0; i < device.num_of_input_connectors; ++i) {
+				JSON_Value* value_i = json_value_init_object();
+				JSON_Object* json_i = json_value_get_object(value_i);
+
+				json_object_set_string(json_i, "name", pair.first.c_str());
+				json_object_set_string(json_i, "value", std::to_string(i).c_str());
+
+				json_array_append_value(array, value_i);
+			}
+
+			return v_array;
+		}
 	}
 	else if (pair.second.find("RelayLogicalState") != std::string::npos) {
 		json_object_set_string(json, "name", pair.first.c_str());

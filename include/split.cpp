@@ -8,9 +8,7 @@ std::vector<std::string> split(const std::string &s, char delim) {
 	std::stringstream stream(s);
 	std::string between;
 
-	while (getline(stream, between, delim)) {
-		vector.push_back(between);
-	}
+	while (getline(stream, between, delim)) {vector.push_back(between);}
 
 	return vector;
 }

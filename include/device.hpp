@@ -24,7 +24,7 @@ private: //Classwide variables
 	std::string m_password;
 	std::string m_url;
 	DeviceBindingProxy deviceBindProxy;
-public://Xaddr
+public://Xaddr and resps
 	std::string anXaddr;
 	std::string deXaddr;
 	std::string evXaddr;
@@ -42,6 +42,7 @@ public://Variables from the camera that need to be passed
 	std::string HardwareId;
 	std::string Model;
 	std::string SerialNumber;
+	int num_of_input_connectors;
 };
 
 #endif // !"_Device_"

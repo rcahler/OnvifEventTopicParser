@@ -10,8 +10,8 @@
 #include <string>
 #include "split.h"
 
-//TODO
-//Check if username and password are valid with the supplied ip address
+//The credentials class handles the users inputs, and makes it usefull for the rest of the program.
+//It also handles checking to make sure things like the ip address are correctly formatted.
 Credentials::Credentials(int argc, char* argv[]) {
 
 	username = NULL;
@@ -56,7 +56,9 @@ Credentials::Credentials(int argc, char* argv[]) {
 			}
 		}
 		
-		
+		//old_way allows the user to enter data with the following format
+		//Utility.exe username password ip_address filepath
+		//This is just so I don't have to re-write my batch files, delete later
 		if (strcmp(argv[argc - 1], "-o") == 0) {
 			old_way = true;
 		}
@@ -71,12 +73,15 @@ Credentials::Credentials(int argc, char* argv[]) {
 		}
 	}
 
+	//Not all cams require a password, but the utility does.
+	//Adds placeholder
 	if (password == NULL) {
 		password = new char[8];
 		strcpy_s(password, 8, "NO_PASS");
 	}
 }
 
+//Error code numbers explained in printCredErrors(int)
 int Credentials::ValidateCreds()
 {
 	if (help) {
@@ -115,27 +120,19 @@ int Credentials::ValidateCreds()
 	url = xAddr;
 
 	//Checks valid json file
-
 	if (filepath) {
-
-		if (strlen(filepath) > 5) {
-			char filetype[6];
-
-			int j = 0;
-			for (size_t i = strlen(filepath) - 5; i < strlen(filepath); ++i) {
-				filetype[j] = filepath[i];
-				++j;
-			}
-			filetype[5] = '\0'; //Null terminator
-			if (!strcmp(filetype, ".json") == 0) {
-				return 3;
-			}
-		}
-		else {
+		if (strlen(filepath) <= 5) {
 			return 3;
 		}
+		char filetype[6];
+		int j = 0;
+		for (size_t i = strlen(filepath) - 5; i < strlen(filepath); ++i) {
+			filetype[j] = filepath[i];
+			++j;
+		}
+		filetype[5] = '\0'; //Null terminator
+		if (!strcmp(filetype, ".json") == 0) {return 3;}
 	}
-
 	return 0;
 }
 
@@ -167,7 +164,6 @@ void printHelp() {
 	std::cerr << "	-f: Optional, Filepath to the json file (Whether it exists or needs to be created) where the data will be added. If no file is given, the data will be sent to the command line" << std::endl;
 	std::cerr << "	-o: Testing, Place at the end of the input parameters uses the built in order of [Utility.exe username password ip /filepath/]" << std::endl;
 	std::cerr << "	-port: Optional, allows the user to specify a non-standard port number" << std::endl;
-	//std::cerr << "	-b: Optional, Batch tests cameras from a text file" << std::endl;
 	std::cerr << "" << std::endl;
 	std::cerr << "Usage:" << std::endl;
 	std::cerr << "----------" << std::endl;

@@ -129,6 +129,9 @@ int Device::GetCapabilities()
 		ioXaddr = m_url;
 	}
 
+	std::cout << "Number of input connectors " << *GCresp.Capabilities->Device->IO->InputConnectors << std::endl;
+	num_of_input_connectors = *GCresp.Capabilities->Device->IO->InputConnectors;
+
 	return result;
 }
 

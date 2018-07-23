@@ -6,30 +6,21 @@
 #include "Topic.h"
 #include "ParseEventProperties.h"
 
-//Each of the string vectors returned has the Topic name, the name of the data and the data type as seperate strings
+//gsoap bindings do not parse the topics, instead returning soap_dom_elements which must be manually parsed
 std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 
-	/*
-	for (size_t i = 0; i < dom.size(); i++) {
-		std::cout << "HERE" << std::endl;
-		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
-			std::cout << "HERE" << std::endl;
-			std::cout << it->name << std::endl;
-		}
-	}
-	*/
-
 	std::stringstream stream;
-	//Parse
+	
 	for (size_t i = 0; i < dom.size(); i++) {
-
-		//This clearly is not the most effiecient way of doing this, but soap_dom does not provide a distance class
 		size_t depth = 0;
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
 			if (it->depth() > depth) {
 				depth = it->depth();
 			}
 		}
+
+		std::cout << depth << std::endl;
+
 		std::string* Topic = new std::string[depth];
 		// print attribute tags
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
