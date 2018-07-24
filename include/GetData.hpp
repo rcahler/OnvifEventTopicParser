@@ -12,7 +12,7 @@ public: //Constructor
 private://Internal functions
 	void ToJsonTopicTwoElements(std::string, std::vector<std::pair<std::string, std::string>>);
 	void ToJsonTopicMoreElements(std::string, std::vector<std::pair<std::string, std::string>>);
-	void ToJsonTopicLessElements(std::string, std::vector<std::pair<std::string, std::string>>);
+	void ToJsonTopicOneElement(std::string, std::vector<std::pair<std::string, std::string>>);
 	bool IsMotion(std::string);
 	bool IsInTrig(std::string);
 	std::string FindReferenceToken(JSON_Object*, std::pair<std::string, std::string>);

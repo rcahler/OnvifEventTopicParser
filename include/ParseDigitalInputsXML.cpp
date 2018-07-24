@@ -2,6 +2,7 @@
 #include <iostream>
 #include "split.h"
 
+//Manually parses GetDigitalInputsResponse xml into useable format
 std::vector<std::string> ParseDigitalInputsXML(char* string)
 {
 	std::string xml = std::string(string);

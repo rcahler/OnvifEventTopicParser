@@ -32,10 +32,11 @@ int main(int argc, char* argv[]) {
 
 
 	std::vector<tt__RelayOutput*> relay_outputs;
-	
+
+	//Device IO calls are being made in Main() because the procedurally generated destructors made by Gsoap are not working
+	//Ties calls to runtime of the program instead
 	int deviceio_relay_result = deviceIO.GetRelayOutputs();
-	if (deviceio_relay_result == SOAP_OK) {
-		
+	if (deviceio_relay_result == SOAP_OK) {	
 		if (deviceIO.relay_outputs.size() > 0) {
 			relay_outputs = deviceIO.relay_outputs;
 		}
@@ -53,6 +54,9 @@ int main(int argc, char* argv[]) {
 		std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;
 	}
 	std::vector<std::string> DigitalInputs;
+
+	//Some cameras use a non-standard namespace which cannot be parsed by the procedurally generated gsoap functions
+	//Uses gsoaps logging features to write the xml of the entire call to a temp file
 	if (digital_inputs_result == 200) {
 		
 		FILE* tFile;
@@ -88,15 +92,15 @@ int main(int argc, char* argv[]) {
 	else if (digital_inputs_result == SOAP_OK) {
 		data.AddDeviceIO(deviceIO.digital_inputs_soap, relay_outputs);
 	}
-	else {
-		
+	else {//Non standard error on this call
+		if (verbose) {
+			std::cerr << "This is a non-standard GetDigitalInputsResponse" << std::endl;
+		}
 	}
 
 	if (DigitalInputs.size()) {
 		data.AddDeviceIO(DigitalInputs, relay_outputs);
 	}
-
-	
 
 	data.DataToJson();
 	std::string name = data.returnManu();

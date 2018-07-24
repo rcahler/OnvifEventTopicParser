@@ -19,22 +19,18 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 			}
 		}
 
-		std::cout << depth << std::endl;
-
 		std::string* Topic = new std::string[depth];
 		// print attribute tags
 		for (soap_dom_element::iterator it = dom[i].begin(); it != dom[i].end(); ++it) {
 			std::string itTag(it->tag());
 			Topic[it->depth() - 1] = itTag;
-			if (itTag.find("tt:SimpleItem") != std::string::npos) { //Get the attributes of the element
+			if (itTag.find("tt:SimpleItem") != std::string::npos) { //Marker for the attributes, shortened because some cameras only provide this much
 				if (it->atts) {
-					//There has to be a better way to do this but I can't figure it out
+					
 					soap_dom_attribute dom = *it->atts;
 					soap_dom_attribute domNext = *it->atts->next;
-
 					for (size_t j = 0; j < depth; j++) {
 						if (Topic[j].find("tt:") == std::string::npos) {
-							//Make look better
 							if (Topic[j].find(':') != std::string::npos) {
 								stream << split(Topic[j], ':')[1] << "/";
 							}
@@ -84,12 +80,11 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 		}
 	}
 
+	//Put inside container object to avoid double nested vectors
 	std::vector<Topic> topics;
 	for (size_t i = 0; i < splitBySpace.size(); i++) {
-
 		Topic topic;
 		topic.name = splitBySpace[i][0];
-
 		std::vector<std::pair<std::string, std::string>> elements;
 
 		for (size_t k = 1; k < splitBySpace[i].size(); k += 2) {
@@ -97,10 +92,7 @@ std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {
 			elements.push_back(pair);
 		}
 		topic.elements = elements;
-
 		topics.push_back(topic);
-
 	}
-
 	return topics;
 }

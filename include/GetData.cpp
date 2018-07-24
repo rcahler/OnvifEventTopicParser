@@ -46,7 +46,6 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 
 	event_url = device.evXaddr;
 	media_url = device.meXaddr;
-
 	io_url = device.ioXaddr;
 
 	profile.SetParameters(m_username, m_password, media_url);
@@ -86,7 +85,8 @@ void GetData::DataToJson()
 		return;
 	}
 
-	//Goes to correct function to parse
+	//Topics are returned with different numbers of elements
+	//The number of elements changes the way that they are parsed by the system
 	for (size_t i = 0; i < topics.size(); i++) {
 		std::vector<std::pair<std::string, std::string>> elements = topics[i].elements;
 		std::string name = topics[i].name;
@@ -97,7 +97,7 @@ void GetData::DataToJson()
 			ToJsonTopicMoreElements(name, elements);
 		}
 		else if (elements.size() == 1) {
-			ToJsonTopicLessElements(name, elements);
+			ToJsonTopicOneElement(name, elements);
 		}
 		else {
 			std::cerr << "ERROR" << std::endl;
@@ -105,7 +105,6 @@ void GetData::DataToJson()
 	}
 
 	root_value = json_value_init_object();
-
 	JSON_Object *root_object = json_value_get_object(root_value);
 
 	json_object_set_string(root_object, "manufacturer", Manufacturer.c_str());
@@ -162,6 +161,7 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	JSON_Object *topic_object = json_value_get_object(topic_value);
 	
 	char* c_name = &(name[0]);
+
 	removeChar(c_name, '\\');
 	json_object_set_string(topic_object, "name", c_name);
 
@@ -176,7 +176,6 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	source_value = DealWithTypes(elements[0]);
 	data_value = DealWithTypes(elements[1]);
 
-
 	json_object_set_value(topic_object, "source", source_value);
 	json_object_set_value(topic_object, "data", data_value);
 
@@ -189,6 +188,7 @@ void GetData::ToJsonTopicTwoElements(std::string name, std::vector<std::pair<std
 	else {
 		std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
+
 	return;
 }
 
@@ -261,7 +261,7 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 	return;
 }
 
-void GetData::ToJsonTopicLessElements(std::string name, std::vector<std::pair<std::string, std::string>> elements)
+void GetData::ToJsonTopicOneElement(std::string name, std::vector<std::pair<std::string, std::string>> elements)
 {
 	JSON_Value *topic_value = json_value_init_object();
 	JSON_Object *topic_object = json_value_get_object(topic_value);
@@ -482,9 +482,8 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 
 	JSON_Value* value = json_value_init_object();
 	JSON_Object* json = json_value_get_object(value);
-
 	
-
+	//In the existing json some boolean values are written in a variety of ways. There is no way to figure out which way based off the camera
 	if ((pair.second.find("boolean") != std::string::npos) || (pair.second.find("string") != std::string::npos)) {
 		if ((pair.first.find("LogicalState") != std::string::npos)|| (pair.first.find("state") != std::string::npos)|| (pair.first.find("Level") != std::string::npos)) {
 			json_object_set_string(json, "name", pair.first.c_str());
@@ -496,7 +495,7 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 			json_object_set_string(json, "on", "true");
 			json_object_set_string(json, "off", "false");
 		}
-		else {//These might not neccisarily be correct
+		else {
 			json_object_set_string(json, "name", pair.first.c_str());
 			json_object_set_string(json, "on", "1");
 			json_object_set_string(json, "off", "0");
@@ -513,7 +512,8 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 	}
 	else if (pair.second.find("int") != std::string::npos) {
 
-		//Create an array here for index based DigitalIO from device caps
+		//Some cameras who have motion input triggers simply have integer values
+		//This value comes from the number of input connectors obtained through the Device Capabilities
 		if (pair.first.find("Index") != std::string::npos) {
 			JSON_Value* v_array = json_value_init_array();
 			JSON_Array* array = json_value_get_array(v_array);
@@ -530,6 +530,10 @@ JSON_Value* GetData::DealWithTypes(std::pair<std::string, std::string> pair)
 			}
 
 			return v_array;
+		}
+		else {
+			json_object_set_string(json, "name", pair.first.c_str());
+			json_object_set_string(json, "int", pair.second.c_str());
 		}
 	}
 	else if (pair.second.find("RelayLogicalState") != std::string::npos) {

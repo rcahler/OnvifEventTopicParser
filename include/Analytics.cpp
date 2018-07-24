@@ -1,9 +1,7 @@
 #include "Analytics.hpp"
 #include "wsseapi.h"
 
-Analytics::Analytics()
-{
-}
+Analytics::Analytics(){}
 
 void Analytics::SetParameters(std::string user, std::string pass, std::string url)
 {
