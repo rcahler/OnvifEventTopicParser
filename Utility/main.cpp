@@ -55,10 +55,11 @@ int main(int argc, char* argv[]) {
 	}
 	std::vector<std::string> DigitalInputs;
 
-	//Some cameras use a non-standard namespace which cannot be parsed by the procedurally generated gsoap functions
-	//Uses gsoaps logging features to write the xml of the entire call to a temp file
-	if (digital_inputs_result == 200) {
-		
+	
+	
+	if (digital_inputs_result == 200) {//Some cameras use a non-standard namespace which cannot be parsed by the procedurally generated gsoap functions, this is that return
+
+		//Uses gsoaps logging features to write the xml of the entire call to a temp file
 		FILE* tFile;
 		errno_t file_error = tmpfile_s(&tFile);
 		if ((file_error) && (verbose)) {
@@ -113,5 +114,3 @@ int main(int argc, char* argv[]) {
 	}
 	
 }
-
-

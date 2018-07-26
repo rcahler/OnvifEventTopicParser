@@ -71,9 +71,9 @@ int main(int argc, char* argv[]) {
 			char* ip = new char[strlen(split_line[2].c_str())];
 			strcpy_s(ip, strlen(split_line[2].c_str()) + 1, split_line[2].c_str());
 
-			std::string cl = "Utility.exe -u " + split_line[0] + " -p " + split_line[1] + " -ip " + split_line[2] + " -f " + outputFilename;
+			std::string command_line = "Utility.exe -u " + split_line[0] + " -p " + split_line[1] + " -ip " + split_line[2] + " -f " + outputFilename;
 
-			system(cl.c_str());
+			system(command_line.c_str());
 			
 		}
 		else if (split_line.size() <= 2) {
@@ -83,9 +83,9 @@ int main(int argc, char* argv[]) {
 			char* ip = new char[strlen(split_line[1].c_str())];
 			strcpy_s(ip, strlen(split_line[1].c_str()) + 1, split_line[1].c_str());
 
-			std::string cl = "Utility.exe -u " + split_line[0] + " -ip " + split_line[1] + " -f " + outputFilename;
+			std::string command_line = "Utility.exe -u " + split_line[0] + " -ip " + split_line[1] + " -f " + outputFilename;
 
-			system(cl.c_str());
+			system(command_line.c_str());
 		}
 
 		lineNumber += 1;

@@ -68,10 +68,13 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 	}
 
 	Manufacturer = device.Manufacturer;
+
+	/* This might be needed later idk
 	std::string FirmwareVersion = device.FirmwareVersion;
 	std::string HardwareId = device.HardwareId;
 	std::string Model = device.Model;
 	std::string SerialNumber = device.SerialNumber;
+	*/
 }
 
 void GetData::DataToJson()
@@ -331,6 +334,7 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 	std::string token;
 	
 	if (pair.second.find("AlarmInToken") != std::string::npos) {
+		//Not sure if alarm tokens are within my scope
 	}
 	else if (pair.second.find("InputToken") != std::string::npos) {
 		if ((diSoap) || (diString)) {
@@ -367,6 +371,9 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 			diString = '[' + diString + ']';
 
 			return diString;
+		}
+		else if (device.num_of_input_connectors) { //Treat like int values
+			std::cout << "Finish turning input connector into num" << std::endl;
 		}
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
