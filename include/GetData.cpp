@@ -337,6 +337,15 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		//Not sure if alarm tokens are within my scope
 	}
 	else if (pair.second.find("InputToken") != std::string::npos) {
+
+
+		if (((!diSoap) || (!diString)) && device.num_of_input_connectors) {
+			for (int i = 0; i < device.num_of_input_connectors; ++i) {
+				digital_inputs_string.push_back(std::to_string(i));
+			}
+			diString = true;
+		}
+
 		if ((diSoap) || (diString)) {
 			std::vector<char*> strings;
 			if (diSoap) {
@@ -372,22 +381,34 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 
 			return diString;
 		}
-		else if (device.num_of_input_connectors) { //Treat like int values
-			std::cout << "Finish turning input connector into num" << std::endl;
-		}
 	}
 	else if (pair.second.find("RelayToken") != std::string::npos) {
+
 		if ((!relay_outputs.size()) && (m_verbose)) {
-			std::cerr << "no relay_outputs" << std::endl;
+			if (!device.num_of_input_connectors) {
+				std::cerr << "no relay_outputs" << std::endl;
+			}
 		}
+
 		std::vector<char*> strings;
-		for (size_t i = 0; i < relay_outputs.size(); ++i) {
+
+		if (relay_outputs.size()) {
+			for (size_t i = 0; i < relay_outputs.size(); ++i) {
+				JSON_Value* value = json_value_init_object();
+				JSON_Object* object = json_value_get_object(value);
+				json_object_set_string(object, "name", pair.first.c_str());
+				json_object_set_string(object, "value", relay_outputs[i]->token.c_str());
+				strings.push_back(json_serialize_to_string(value));
+			}
+		}
+		else if (device.num_of_input_connectors) {
+			std::cout << "HERE" << std::endl;
 			JSON_Value* value = json_value_init_object();
 			JSON_Object* object = json_value_get_object(value);
 			json_object_set_string(object, "name", pair.first.c_str());
-			json_object_set_string(object, "value", relay_outputs[i]->token.c_str());
 			strings.push_back(json_serialize_to_string(value));
 		}
+
 		std::string roString;
 		for (size_t i = 0; i < strings.size(); ++i) {
 			if (i == strings.size() - 1) {
@@ -405,6 +426,15 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		if (pair.first.find("VideoSource") != std::string::npos) {
 
 		} else if (pair.first.find("Input") != std::string::npos) {
+
+			if (((!diSoap) || (!diString)) && device.num_of_input_connectors) {
+				for (int i = 0; i < device.num_of_input_connectors; ++i) {
+					digital_inputs_string.push_back(std::to_string(i));
+				}
+				diString = true;
+			}
+
+
 			if ((diSoap)||(diString)) {
 				std::vector<char*> strings;
 				if (diSoap) {
@@ -445,16 +475,31 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 		}
 		else if (pair.first.find("Relay") != std::string::npos) {
 			if ((!relay_outputs.size()) && (m_verbose)) {
-				std::cerr << "no relay_outputs" << std::endl;
+				if (!device.num_of_input_connectors) {
+					std::cerr << "no relay_outputs" << std::endl;
+				}
 			}
 			std::vector<char*> strings;
-			for (size_t i = 0; i < relay_outputs.size(); ++i) {
-				JSON_Value* value = json_value_init_object();
-				JSON_Object* object = json_value_get_object(value);
-				json_object_set_string(object, "name", pair.first.c_str());
-				json_object_set_string(object, "value", relay_outputs[i]->token.c_str());
-				strings.push_back(json_serialize_to_string(value));
+
+			if (relay_outputs.size()) {
+				for (size_t i = 0; i < relay_outputs.size(); ++i) {
+					JSON_Value* value = json_value_init_object();
+					JSON_Object* object = json_value_get_object(value);
+					json_object_set_string(object, "name", pair.first.c_str());
+					json_object_set_string(object, "value", relay_outputs[i]->token.c_str());
+					strings.push_back(json_serialize_to_string(value));
+				}
 			}
+			else if (device.num_of_input_connectors) {
+				for (size_t i = 0; i < device.num_of_input_connectors; ++i) {
+					JSON_Value* value = json_value_init_object();
+					JSON_Object* object = json_value_get_object(value);
+					json_object_set_string(object, "name", pair.first.c_str());
+					json_object_set_string(object, "value", std::to_string(i).c_str());
+					strings.push_back(json_serialize_to_string(value));
+				}
+			}
+
 			std::string roString;
 			for (size_t i = 0; i < strings.size(); ++i) {
 				if (i == strings.size() - 1) {
