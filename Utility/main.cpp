@@ -54,8 +54,6 @@ int main(int argc, char* argv[]) {
 		std::cerr << "GetDigitalInputs error code " << digital_inputs_result << std::endl;
 	}
 	std::vector<std::string> DigitalInputs;
-
-	
 	
 	if (digital_inputs_result == 200) {//Some cameras use a non-standard namespace which cannot be parsed by the procedurally generated gsoap functions, this is that return
 
@@ -112,5 +110,4 @@ int main(int argc, char* argv[]) {
 	else if (data.connected) {
 		std::cout << data.returnStream().str() << std::endl;
 	}
-	
 }

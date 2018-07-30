@@ -3,7 +3,6 @@
 
 #include <string>
 #include "soapDeviceBindingProxy.h"
-#include "soapStub.h"
 
 class Device {
 

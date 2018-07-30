@@ -5,6 +5,7 @@
 class DeviceIO {
 public:
 	DeviceIO();
+	~DeviceIO();
 public:
 	void SetParameters(std::string user, std::string pass, std::string url);
 	int GetRelayOutputs();

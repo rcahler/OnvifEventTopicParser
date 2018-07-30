@@ -3,6 +3,10 @@
 
 DeviceIO::DeviceIO(){}
 
+DeviceIO::~DeviceIO()
+{
+}
+
 void DeviceIO::SetParameters(std::string user, std::string pass, std::string url)
 {
 	m_username = user;

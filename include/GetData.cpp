@@ -48,7 +48,6 @@ GetData::GetData(std::string user, std::string pass, std::string url, bool verbo
 	media_url = device.meXaddr;
 	io_url = device.ioXaddr;
 
-	profile.SetParameters(m_username, m_password, media_url);
 	event.SetParameters(m_username, m_password, event_url);
 
 	int eventResp = event.GetEventProperties();
@@ -86,6 +85,10 @@ void GetData::DataToJson()
 	if ((topics.size() < 1)&&(m_verbose)){
 		std::cerr << "This camera does not support topics" << std::endl;
 		return;
+	}
+	
+	for (std::vector<Topic>::iterator itr = topics.begin(); itr != topics.end(); itr++) {
+		std::cout << itr->name << std::endl;
 	}
 
 	//Topics are returned with different numbers of elements
@@ -258,7 +261,7 @@ void GetData::ToJsonTopicMoreElements(std::string name, std::vector<std::pair<st
 		inputV.push_back(std::string(json_serialize_to_string(topic_value)));
 	}
 	else {
-		//std::cout << "Neither motion or input trigger: " << name << std::endl;
+		std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 
 	return;
@@ -300,7 +303,7 @@ void GetData::ToJsonTopicOneElement(std::string name, std::vector<std::pair<std:
 		}
 	}
 	else {
-		//std::cout << "Neither motion or input trigger: " << name << std::endl;
+		std::cout << "Neither motion or input trigger: " << name << std::endl;
 	}
 	return;
 }
@@ -338,12 +341,17 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 	}
 	else if (pair.second.find("InputToken") != std::string::npos) {
 
-
-		if (((!diSoap) || (!diString)) && device.num_of_input_connectors) {
-			for (int i = 0; i < device.num_of_input_connectors; ++i) {
-				digital_inputs_string.push_back(std::to_string(i));
+		std::cout << device.num_of_input_connectors << std::endl;
+		if ((!diSoap) || (!diString)) {
+			if (device.num_of_input_connectors) {
+				for (int i = 0; i < device.num_of_input_connectors; ++i) {
+					digital_inputs_string.push_back(std::to_string(i));
+				}
+				diString = true;
 			}
-			diString = true;
+			else {
+				std::cout << "Here" << std::endl;
+			}
 		}
 
 		if ((diSoap) || (diString)) {
@@ -402,7 +410,6 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 			}
 		}
 		else if (device.num_of_input_connectors) {
-			std::cout << "HERE" << std::endl;
 			JSON_Value* value = json_value_init_object();
 			JSON_Object* object = json_value_get_object(value);
 			json_object_set_string(object, "name", pair.first.c_str());
@@ -427,12 +434,19 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 
 		} else if (pair.first.find("Input") != std::string::npos) {
 
-			if (((!diSoap) || (!diString)) && device.num_of_input_connectors) {
-				for (int i = 0; i < device.num_of_input_connectors; ++i) {
-					digital_inputs_string.push_back(std::to_string(i));
+			if ((!diSoap) || (!diString)) {
+				if (device.num_of_input_connectors) {
+					for (int i = 0; i < device.num_of_input_connectors; ++i) {
+						digital_inputs_string.push_back(std::to_string(i));
+					}
+					diString = true;
 				}
-				diString = true;
+				else {
+					std::cerr << "This camera has a topic with InputTokens, but does not contain any data about them" << std::endl;
+				}
 			}
+
+
 
 
 			if ((diSoap)||(diString)) {

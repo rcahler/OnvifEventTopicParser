@@ -38,7 +38,6 @@ private:
 	std::stringstream stream;
 	std::string Manufacturer;
 	JSON_Value * root_value;
-	Profiles profile;
 	Event event;
 	std::vector<tt__DigitalInput*> digital_inputs_soap;
 	bool diSoap = false;
