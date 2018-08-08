@@ -1,5 +1,4 @@
-#ifndef _ValCred_
-#define _ValCred_
+#pragma once
 
 #include <string>
 
@@ -21,4 +20,3 @@ public:
 
 void printCredErrors(int);
 void printHelp();
-#endif

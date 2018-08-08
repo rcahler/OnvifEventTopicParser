@@ -1,4 +1,5 @@
 #include "event.hpp"
+
 #include "wsseapi.h"
 
 Event::Event() {}

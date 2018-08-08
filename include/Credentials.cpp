@@ -1,13 +1,16 @@
 #define MAX_URL_LENGTH 128
 #include "Credentials.hpp"
-#include "soapDeviceBindingProxy.h"
-#include "soapStub.h"
+
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <algorithm>
 #include <iterator>
 #include <string>
+#include <algorithm>
+
+#include "soapDeviceBindingProxy.h"
+#include "soapStub.h"
+
 #include "split.h"
 
 //The credentials class handles the users inputs, and makes it usefull for the rest of the program.
@@ -46,7 +49,7 @@ Credentials::Credentials(int argc, char* argv[]) {
 		else if (strcmp(argv[i], "-h") == 0) { //help
 			help = true;
 		}
-		else if (strcmp(argv[i], "-v") == 0) {
+		else if (strcmp(argv[i], "-v") == 0) { //verbosity
 			verbose = true;
 		} 
 		else if (strcmp(argv[i], "-port") == 0) { //port number
@@ -72,7 +75,7 @@ Credentials::Credentials(int argc, char* argv[]) {
 		}
 	}
 
-	//Not all cams require a password, but the utility does.
+	//Not all cams require a password, but the utility was written assuming they do
 	//Adds placeholder
 	if (password == NULL) {
 		password = new char[8];

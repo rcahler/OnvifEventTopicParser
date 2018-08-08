@@ -1,10 +1,12 @@
+#include "GetData.hpp"
+
+#include "parson.h"
+
 #include "device.hpp"
 #include "event.hpp"
-#include "GetData.hpp"
 #include "ParseEventProperties.h"
 #include "removeChar.h"
 #include "Topic.h"
-#include "parson.h"
 #include "Analytics.hpp"
 
 
@@ -85,10 +87,6 @@ void GetData::DataToJson()
 	if ((topics.size() < 1)&&(m_verbose)){
 		std::cerr << "This camera does not support topics" << std::endl;
 		return;
-	}
-	
-	for (std::vector<Topic>::iterator itr = topics.begin(); itr != topics.end(); itr++) {
-		std::cout << itr->name << std::endl;
 	}
 
 	//Topics are returned with different numbers of elements
@@ -348,9 +346,6 @@ std::string GetData::FindReferenceToken(JSON_Object* json, std::pair<std::string
 					digital_inputs_string.push_back(std::to_string(i));
 				}
 				diString = true;
-			}
-			else {
-				std::cout << "Here" << std::endl;
 			}
 		}
 

@@ -1,6 +1,9 @@
 #include "device.hpp"
-#include "wsseapi.h"
+
 #include <ctime>
+
+#include "wsseapi.h"
+
 
 Device::Device() {}
 
@@ -23,17 +26,16 @@ int Device::SyncCamTime()
 
 	soap_wsse_add_Security(&deviceBindProxy);
 	LocalAddUsernameTokenDigest(&deviceBindProxy, offset);
+
 	// creating and setting parameter for the set date and time request
 	_tds__SetSystemDateAndTime SetDateTimeReq;
 	_tds__SetSystemDateAndTimeResponse SetSystemDateAndTimeResponse;
 	
-	SetDateTimeReq.DateTimeType = (tt__SetDateTimeType)0;// DateTimeType - 0=manual, 1=NTP;
-	SetDateTimeReq.DaylightSavings = (bool)offsetStruct.tm_isdst;// DayLightSavings;
+	SetDateTimeReq.DaylightSavings = (bool)offsetStruct.tm_isdst;// DayLightSavings
 																	  
 	tt__TimeZone* TiZ = new tt__TimeZone;	
 	std::string TimeZ = "GMT-5:00:00";
 	TiZ->TZ = TimeZ;	SetDateTimeReq.TimeZone = TiZ;
-	// set the camera time to match pc time for authentication simplicity
 	tt__DateTime* UTCDateTime = new tt__DateTime;
 
 	time_t NOW = std::time(NULL);
@@ -42,8 +44,10 @@ int Device::SyncCamTime()
 
 	tt__Date thisDate;		
 	thisDate.Day = noww.tm_mday;	
+
+	// added 1 to month and 1900 to year to account for how tm defines those values
 	thisDate.Month = noww.tm_mon + 1;	
-	thisDate.Year = noww.tm_year + 1900; // added 1 to month and 1900 to year to account for how tm defines those values
+	thisDate.Year = noww.tm_year + 1900; 
 
 	tt__Time thisTime;		
 	thisTime.Hour = noww.tm_hour + 1;
@@ -53,6 +57,7 @@ int Device::SyncCamTime()
 	UTCDateTime->Time = &thisTime;
 	SetDateTimeReq.UTCDateTime = UTCDateTime;
 	result = deviceBindProxy.SetSystemDateAndTime(&SetDateTimeReq, SetSystemDateAndTimeResponse);
+
 	if (result != SOAP_OK) {
 		return 2;
 	}
@@ -70,6 +75,7 @@ int Device::GetDeviceInformation()
 	if (result != SOAP_OK) {
 		return result;
 	}
+
 	Manufacturer = GDIresp.Manufacturer;
 	FirmwareVersion = GDIresp.FirmwareVersion;
 	HardwareId = GDIresp.HardwareId;
@@ -165,8 +171,7 @@ void Device::SetParameters(std::string user, std::string pass, std::string url)
 
 int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 {
-	/* start soap_wsse_add_UsernameTokenDigest; Taken from wsseapi.cpp*/
-	/* All of this is taken from the function soap_wsse_add_UsernameTokenDigest() defined in wsseapi.cpp */
+	// start soap_wsse_add_UsernameTokenDigest; Taken from wsseapi.cpp
 	_wsse__Security *security = soap_wsse_add_Security(soapOff);
 	time_t now = time(NULL);
 	now -= (time_t)cam_pc_offset; //offset so digest comes out correctly (synced times between cam and pc);
@@ -177,7 +182,7 @@ int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 	char HA[SOAP_SMD_SHA1_SIZE], HABase64[29];
 	char nonce[20], *nonceBase64;
 
-	/*start calc_nonce(soapOff, nonce); Taken from wsseapi.cpp */
+	//start calc_nonce(soapOff, nonce); Taken from wsseapi.cpp
 	time_t r = time(NULL);
 	r -= (time_t)cam_pc_offset; //offset so digest comes out correctly (synced times between cam and pc);
 	memcpy(nonce, &r, 4);
@@ -186,25 +191,23 @@ int Device::LocalAddUsernameTokenDigest(soap * soapOff, double cam_pc_offset)
 		r = soap_random;
 		memcpy(nonce + i, &r, 4);
 	}
-	/*end calc_nonce(soapOff, nonce); */
+	//end calc_nonce
 
 	nonceBase64 = soap_s2base64(soapOff, (unsigned char*)nonce, NULL, 20);
 
-	/* start calc_digest(soapOff, created, nonce, 20, strPass, HA);  Taken from wsseapi.cpp */
+	// start calc_digest(soapOff, created, nonce, 20, strPass, HA);  Taken from wsseapi.cpp
 	struct soap_smd_data context;
-	/* use smdevp engine */
+
 	soap_smd_init(soapOff, &context, SOAP_SMD_DGST_SHA1, NULL, 0);
 	soap_smd_update(soapOff, &context, nonce, 20);
 	soap_smd_update(soapOff, &context, created, strlen(created));
 	soap_smd_update(soapOff, &context, m_password.c_str(), strlen(m_password.c_str()));
 	soap_smd_final(soapOff, &context, HA, NULL);
-	/* end calc_digest(soapOff, created, nonce, 20, strPass, HA); */
+	// end calc_digest
 
 	soap_s2base64(soapOff, (unsigned char*)HA, HABase64, SOAP_SMD_SHA1_SIZE);
-	/* populate the UsernameToken with digest */
 	soap_wsse_add_UsernameTokenText(soapOff, "Id", m_username.c_str(), HABase64);
 
-	/* populate the remainder of the password, nonce, and created */
 	security->UsernameToken->Password->Type = (char*)wsse_PasswordDigestURI;
 	security->UsernameToken->Nonce = (struct wsse__EncodedString*)soap_malloc(soapOff, sizeof(struct wsse__EncodedString));
 

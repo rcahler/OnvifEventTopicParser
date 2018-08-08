@@ -1,5 +1,4 @@
-#ifndef _Device_
-#define _Device_
+#pragma once
 
 #include <string>
 #include "soapDeviceBindingProxy.h"
@@ -43,6 +42,4 @@ public://Variables from the camera that need to be passed
 	std::string SerialNumber;
 	int num_of_input_connectors;
 };
-
-#endif // !"_Device_"
 

@@ -1,10 +1,12 @@
+#include "ParseEventProperties.h"
+
 #include <string>
 #include <vector>
 #include <sstream>
 #include <soapH.h>
+
 #include "split.h"
 #include "Topic.h"
-#include "ParseEventProperties.h"
 
 //gsoap bindings do not parse the topics, instead returning soap_dom_elements which must be manually parsed
 std::vector<Topic> ParseEventProperties(std::vector<soap_dom_element> dom) {

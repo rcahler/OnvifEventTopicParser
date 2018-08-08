@@ -1,5 +1,7 @@
 #include "ParseDigitalInputsXML.hpp"
+
 #include <iostream>
+
 #include "split.h"
 
 //Manually parses GetDigitalInputsResponse xml into useable format

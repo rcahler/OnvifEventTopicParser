@@ -1,4 +1,5 @@
-#include "Analytics.hpp"
+#include "analytics.hpp"
+
 #include "wsseapi.h"
 
 Analytics::Analytics(){}

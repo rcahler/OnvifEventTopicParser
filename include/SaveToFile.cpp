@@ -1,20 +1,22 @@
 #include "SaveToFile.hpp"
-#include "removeChar.h"
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <cstdint>
+
+//#include <cstdint>
+#include <ctime>
+//#include <cstdio>
+#include <cerrno>
 //Windows specific header files//
 #include <windows.h>
 #include <AtlBase.h>
 #include <atlconv.h>
-/////////////////////////////////
-#include <ctime>
-#include <split.h>
-#include "parson.h"
+
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
-#include <cstdio>
-#include <cerrno>
+
+#include "split.h"
+#include "parson.h"
+#include "removeChar.h"
 
 void SaveToFile(std::string filename, std::string manu, JSON_Value* element) {
 	

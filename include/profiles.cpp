@@ -1,4 +1,5 @@
 #include "profiles.hpp"
+
 #include "wsseapi.h"
 
 Profiles::Profiles() {}

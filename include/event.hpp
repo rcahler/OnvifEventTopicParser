@@ -1,9 +1,8 @@
+#pragma once
+
 #include <string>
 #include "soapStub.h"
 #include "soapPullPointSubscriptionBindingProxy.h"
-
-#ifndef _Event_
-#define _Event_
 
 class Event {
 
@@ -21,5 +20,3 @@ private: //Variables
 public: //Variables to be accessed from outside
 	std::vector<soap_dom_element> topics;
 };
-
-#endif

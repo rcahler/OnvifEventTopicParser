@@ -1,4 +1,5 @@
 #include "DeviceIO.hpp"
+
 #include "wsseapi.h"
 
 DeviceIO::DeviceIO(){}
